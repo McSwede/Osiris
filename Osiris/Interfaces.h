@@ -61,7 +61,7 @@ private:
             if (void* foundInterface = createInterface(name, nullptr))
                 return foundInterface;
 
-        MessageBoxA(nullptr, (std::ostringstream{ } << "Failed to find " << name << " interface!").str().c_str(), "Osiris", MB_OK | MB_ICONERROR);
+        MessageBoxA(nullptr, (std::ostringstream{ } << "Failed to find " << name << " interface!").str().c_str(), "Trigon", MB_OK | MB_ICONERROR);
         std::exit(EXIT_FAILURE);
     }
 };
