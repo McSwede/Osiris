@@ -54,6 +54,10 @@ public:
         int minDamage{ 1 };
         bool killshot{ false };
         bool betweenShots{ true };
+		int shotsFired{ 1 };
+		bool standaloneRecoilControl{ false };
+		float recoilControlX{ 0.0f };
+		float recoilControlY{ 0.0f };
     };
     std::array<Aimbot, 40> aimbot;
 
