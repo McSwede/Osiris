@@ -98,46 +98,41 @@ void Misc::updateClanTag(bool tagChanged) noexcept
 
 void Misc::spectatorList() noexcept
 {
-    if (!config.misc.spectatorList.enabled)
-        return;
+	if (config.misc.spectatorList.enabled && interfaces.engine->isInGame()) {
+		auto localPlayer = interfaces.entityList->getEntity(interfaces.engine->getLocalPlayer());
 
-	auto localPlayer = interfaces.entityList->getEntity(interfaces.engine->getLocalPlayer());
+		if (!localPlayer->isAlive()) {
+			if (!localPlayer->getObserverTarget())
+				return;
+			localPlayer = localPlayer->getObserverTarget();
+		}
 
-	if (!localPlayer->isAlive())
-	{
-		if (!localPlayer->getObserverTarget())
-			return;
-		localPlayer = localPlayer->getObserverTarget();
+		interfaces.surface->setTextFont(Surface::font);
+
+		if (config.misc.spectatorList.rainbow)
+			interfaces.surface->setTextColor(rainbowColor(memory.globalVars->realtime, config.misc.spectatorList.rainbowSpeed));
+		else
+			interfaces.surface->setTextColor(config.misc.spectatorList.color);
+
+		const auto [width, height] = interfaces.surface->getScreenSize();
+
+		int textPositionY{ static_cast<int>(0.5f * height) };
+
+		for (int i = 1; i <= interfaces.engine->getMaxClients(); ++i) {
+			auto entity = interfaces.entityList->getEntity(i);
+			if (!entity || entity->isAlive() || entity->isDormant())
+				continue;
+
+			if (PlayerInfo playerInfo; interfaces.engine->getPlayerInfo(i, playerInfo) && entity->getObserverTarget() == localPlayer && !playerInfo.fakeplayer) {
+				if (wchar_t name[128]; MultiByteToWideChar(CP_UTF8, 0, playerInfo.name, -1, name, 128)) {
+					const auto [textWidth, textHeight] = interfaces.surface->getTextSize(Surface::font, name);
+					interfaces.surface->setTextPosition(width - textWidth - 5, textPositionY);
+					textPositionY -= textHeight;
+					interfaces.surface->printText(name);
+				}
+			}
+		}
 	}
-
-    interfaces.surface->setTextFont(Surface::font);
-
-    if (config.misc.spectatorList.rainbow)
-        interfaces.surface->setTextColor(rainbowColor(memory.globalVars->realtime, config.misc.spectatorList.rainbowSpeed));
-    else
-        interfaces.surface->setTextColor(config.misc.spectatorList.color);
-
-    const auto [width, height] = interfaces.surface->getScreenSize();
-
-    auto textPositionY = static_cast<int>(0.5f * height);
-
-    for (int i = 1; i <= interfaces.engine->getMaxClients(); ++i) {
-        const auto entity = interfaces.entityList->getEntity(i);
-        if (!entity || entity->isDormant() || entity->isAlive() || entity->getObserverTarget() != localPlayer)
-            continue;
-
-        PlayerInfo playerInfo;
-
-        if (!interfaces.engine->getPlayerInfo(i, playerInfo))
-            continue;
-
-        if (wchar_t name[128]; MultiByteToWideChar(CP_UTF8, 0, playerInfo.name, -1, name, 128)) {
-            const auto [textWidth, textHeight] = interfaces.surface->getTextSize(Surface::font, name);
-            interfaces.surface->setTextPosition(width - textWidth - 5, textPositionY);
-            textPositionY -= textHeight;
-            interfaces.surface->printText(name);
-        }
-    }
 }
 
 void Misc::sniperCrosshair() noexcept
