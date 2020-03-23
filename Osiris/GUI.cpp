@@ -975,7 +975,7 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     if (!contentOnly) {
         if (!window.misc)
             return;
-        ImGui::SetNextWindowSize({ 580.0f, 0.0f });
+        ImGui::SetNextWindowSize({ 700.0f, 0.0f });
         ImGui::Begin("Misc", &window.misc, windowFlags);
     }
     ImGui::Columns(2, nullptr, false);
@@ -987,6 +987,13 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::Checkbox("Anti AFK kick", &config.misc.antiAfkKick);
     ImGui::Checkbox("Auto strafe", &config.misc.autoStrafe);
     ImGui::Checkbox("Bunny hop", &config.misc.bunnyHop);
+	ImGui::Checkbox("Human Bunny hop", &config.misc.humanBunnyHop);
+	ImGui::SetNextItemWidth(100.0f);
+	ImGui::SliderInt("Bhop Hit Chance", &config.misc.bhop_hit_chance, 0, 100, "%d%");
+	ImGui::SetNextItemWidth(100.0f);
+	ImGui::InputInt("Bhop Restricted Limit", &config.misc.hops_restricted_limit);
+	ImGui::SetNextItemWidth(100.0f);
+	ImGui::InputInt("Max Hops Hit", &config.misc.max_hops_hit);
     ImGui::Checkbox("Fast duck", &config.misc.fastDuck);
     ImGui::Checkbox("Moonwalk", &config.misc.moonwalk);
     ImGui::Checkbox("Edge Jump", &config.misc.edgejump);
