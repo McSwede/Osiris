@@ -24,6 +24,7 @@ namespace Misc
     void prepareRevolver(UserCmd*) noexcept;
     void fastPlant(UserCmd*) noexcept;
     void drawBombTimer() noexcept;
+	void drawBombDamage() noexcept;
     void stealNames() noexcept;
     void disablePanoramablur() noexcept;
     void quickReload(UserCmd*) noexcept;
