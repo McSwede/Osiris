@@ -10,6 +10,7 @@
 #include "../SDK/Client.h"
 #include "../SDK/GameEvent.h"
 #include "../SDK/GlobalVars.h"
+#include "../SDK/Surface.h"
 
 namespace Misc
 {
@@ -149,4 +150,24 @@ namespace Misc
         if (static_cast<std::size_t>(config.misc.hitSound - 1) < hitSounds.size())
             interfaces.engine->clientCmdUnrestricted(hitSounds[config.misc.hitSound - 1]);
     }
+
+	static float actualFov = 0.0f;
+
+	constexpr void drawAimbotFov() noexcept
+	{
+		if (config.misc.drawAimbotFov && interfaces.engine->isInGame())
+		{
+			auto localPlayer = interfaces.entityList->getEntity(interfaces.engine->getLocalPlayer());
+			if (!localPlayer || !localPlayer->isAlive() || !localPlayer->getActiveWeapon()) return;
+			int weaponId = getWeaponIndex(localPlayer->getActiveWeapon()->itemDefinitionIndex2());
+			if (!config.aimbot[weaponId].enabled) weaponId = 0;
+			if (!config.aimbot[weaponId].enabled) return;
+			auto [width, heigth] = interfaces.surface->getScreenSize();
+			if (config.aimbot[weaponId].silent)
+				interfaces.surface->setDrawColor(255, 10, 10, 255);
+			else interfaces.surface->setDrawColor(10, 255, 10, 255);
+			float radius = std::tan(degreesToRadians(config.aimbot[weaponId].fov / 2.f)) / std::tan(degreesToRadians(actualFov / 2.f)) * width;
+			interfaces.surface->drawOutlinedCircle(width / 2, heigth / 2, radius, 100);
+		}
+	}
 }

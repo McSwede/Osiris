@@ -276,6 +276,7 @@ public:
         bool fixTabletSignal{ false };
         float maxAngleDelta{ 255.0f };
         bool fakePrime{ false };
+		bool drawAimbotFov{ false };
     } misc;
 
     struct {
