@@ -1108,90 +1108,123 @@ void GUI::renderReportbotWindow(bool contentOnly) noexcept
 
 void GUI::renderConfigWindow(bool contentOnly) noexcept
 {
-    if (!contentOnly) {
-        if (!window.config)
-            return;
-        ImGui::SetNextWindowSize({ 290.0f, 190.0f });
-        ImGui::Begin("Config", &window.config, windowFlags);
-    }
+	if (!contentOnly) {
+		if (!window.config)
+			return;
+		ImGui::SetNextWindowSize({ 290.0f, 190.0f });
+		ImGui::Begin("Config", &window.config, windowFlags);
+	}
 
-    ImGui::Columns(2, nullptr, false);
-    ImGui::SetColumnOffset(1, 170.0f);
+	ImGui::Columns(2, nullptr, false);
+	ImGui::SetColumnOffset(1, 170.0f);
 
-    ImGui::PushItemWidth(160.0f);
+	ImGui::PushItemWidth(160.0f);
 
-    constexpr auto& configItems = config.getConfigs();
-    static int currentConfig = -1;
+	if (ImGui::Button("Reload configs", { 160.0F, 25.0F }))
+		config = Config("Trigon");
 
-    if (static_cast<size_t>(currentConfig) >= configItems.size())
-        currentConfig = -1;
+	constexpr auto& configItems = config.getConfigs();
+	static int currentConfig = -1;
 
-    static std::string buffer;
+	if (static_cast<size_t>(currentConfig) >= configItems.size())
+		currentConfig = -1;
 
-    if (ImGui::ListBox("", &currentConfig, [](void* data, int idx, const char** out_text) {
-        auto& vector = *static_cast<std::vector<std::string>*>(data);
-        *out_text = vector[idx].c_str();
-        return true;
-        }, &configItems, configItems.size(), 5) && currentConfig != -1)
-            buffer = configItems[currentConfig];
+	static std::string buffer;
 
-        ImGui::PushID(0);
-        if (ImGui::InputText("", &buffer, ImGuiInputTextFlags_EnterReturnsTrue)) {
-            if (currentConfig != -1)
-                config.rename(currentConfig, buffer.c_str());
-        }
-        ImGui::PopID();
-        ImGui::NextColumn();
+	if (ImGui::ListBox("", &currentConfig, [](void* data, int idx, const char** out_text) {
+		auto& vector = *static_cast<std::vector<std::string>*>(data);
+		*out_text = vector[idx].c_str();
+		return true;
+		}, &configItems, configItems.size(), 5) && currentConfig != -1)
+		buffer = configItems[currentConfig];
 
-        ImGui::PushItemWidth(100.0f);
+		ImGui::PushID(0);
+		if (ImGui::InputText("", &buffer, ImGuiInputTextFlags_EnterReturnsTrue)) {
+			if (currentConfig != -1)
+				config.rename(currentConfig, buffer.c_str());
+		}
+		ImGui::PopID();
+		ImGui::NextColumn();
 
-        if (ImGui::Button("Create config", { 100.0f, 25.0f }))
-            config.add(buffer.c_str());
+		ImGui::PushItemWidth(100.0f);
 
-        if (ImGui::Button("Reset config", { 100.0f, 25.0f }))
-            ImGui::OpenPopup("Config to reset");
+		if (ImGui::Button("Create config", { 100.0f, 25.0f }))
+			config.add(buffer.c_str());
 
-        if (ImGui::BeginPopup("Config to reset")) {
-            static constexpr const char* names[]{ "Whole", "Aimbot", "Triggerbot", "Backtrack", "Anti aim", "Glow", "Chams", "Esp", "Visuals", "Skin changer", "Sound", "Style", "Misc", "Reportbot" };
-            for (int i = 0; i < IM_ARRAYSIZE(names); i++) {
-                if (i == 1) ImGui::Separator();
+		if (ImGui::Button("Reset config", { 100.0f, 25.0f }))
+			ImGui::OpenPopup("Config to reset");
 
-                if (ImGui::Selectable(names[i])) {
-                    switch (i) {
-                    case 0: config.reset(); updateColors(); Misc::updateClanTag(true); SkinChanger::scheduleHudUpdate(); break;
-                    case 1: config.aimbot = { }; break;
-                    case 2: config.triggerbot = { }; break;
-                    case 3: config.backtrack = { }; break;
-                    case 4: config.antiAim = { }; break;
-                    case 5: config.glow = { }; break;
-                    case 6: config.chams = { }; break;
-                    case 7: config.esp = { }; break;
-                    case 8: config.visuals = { }; break;
-                    case 9: config.skinChanger = { }; SkinChanger::scheduleHudUpdate(); break;
-                    case 10: config.sound = { }; break;
-                    case 11: config.style = { }; updateColors(); break;
-                    case 12: config.misc = { };  Misc::updateClanTag(true); break;
-                    case 13: config.reportbot = { }; break;
-                    }
-                }
-            }
-            ImGui::EndPopup();
-        }
-        if (currentConfig != -1) {
-            if (ImGui::Button("Load selected", { 100.0f, 25.0f })) {
-                config.load(currentConfig);
-                updateColors();
-                SkinChanger::scheduleHudUpdate();
-                Misc::updateClanTag(true);
-            }
-            if (ImGui::Button("Save selected", { 100.0f, 25.0f }))
-                config.save(currentConfig);
-            if (ImGui::Button("Delete selected", { 100.0f, 25.0f }))
-                config.remove(currentConfig);
-        }
-        ImGui::Columns(1);
-        if (!contentOnly)
-            ImGui::End();
+		if (ImGui::BeginPopup("Config to reset")) {
+			static constexpr const char* names[]{ "Whole", "Aimbot", "Triggerbot", "Backtrack", "Anti aim", "Glow", "Chams", "Esp", "Visuals", "Skin changer", "Sound", "Style", "Misc", "Reportbot" };
+			for (int i = 0; i < IM_ARRAYSIZE(names); i++) {
+				if (i == 1) ImGui::Separator();
+
+				if (ImGui::Selectable(names[i])) {
+					switch (i) {
+					case 0: config.reset(); updateColors(); Misc::updateClanTag(true); SkinChanger::scheduleHudUpdate(); break;
+					case 1: config.aimbot = { }; break;
+					case 2: config.triggerbot = { }; break;
+					case 3: config.backtrack = { }; break;
+					case 4: config.antiAim = { }; break;
+					case 5: config.glow = { }; break;
+					case 6: config.chams = { }; break;
+					case 7: config.esp = { }; break;
+					case 8: config.visuals = { }; break;
+					case 9: config.skinChanger = { }; SkinChanger::scheduleHudUpdate(); break;
+					case 10: config.sound = { }; break;
+					case 11: config.style = { }; updateColors(); break;
+					case 12: config.misc = { };  Misc::updateClanTag(true); break;
+					case 13: config.reportbot = { }; break;
+					}
+				}
+			}
+			ImGui::EndPopup();
+		}
+		if (currentConfig != -1) {
+			if (ImGui::Button("Load selected", { 100.0f, 25.0f }))
+				ImGui::OpenPopup("Config to load");
+			if (ImGui::BeginPopup("Config to load")) {
+				static constexpr const char* choices[]{ "Confirm", "Cancel" };
+
+				for (auto i = 0; i < IM_ARRAYSIZE(choices); i++)
+					if (ImGui::Selectable(choices[i]))
+						if (i == 0) {
+							config.load(currentConfig);
+							updateColors();
+							SkinChanger::scheduleHudUpdate();
+							Misc::updateClanTag(true);
+						}
+
+				ImGui::EndPopup();
+			}
+
+			if (ImGui::Button("Save selected", { 100.0f, 25.0f }))
+				ImGui::OpenPopup("Config to save");
+			if (ImGui::BeginPopup("Config to save")) {
+				static constexpr const char* choices[]{ "Confirm", "Cancel" };
+
+				for (auto i = 0; i < IM_ARRAYSIZE(choices); i++)
+					if (ImGui::Selectable(choices[i]))
+						if (i == 0) config.save(currentConfig);
+
+				ImGui::EndPopup();
+			}
+
+			if (ImGui::Button("Delete selected", { 100.0f, 25.0f }))
+				ImGui::OpenPopup("Config to delete");
+			if (ImGui::BeginPopup("Config to delete")) {
+				static constexpr const char* choices[]{ "Confirm", "Cancel" };
+
+				for (auto i = 0; i < IM_ARRAYSIZE(choices); i++)
+					if (ImGui::Selectable(choices[i]))
+						if (i == 0) config.remove(currentConfig);
+
+				ImGui::EndPopup();
+			}
+		}
+		ImGui::Columns(1);
+		if (!contentOnly)
+			ImGui::End();
 }
 
 void GUI::renderGuiStyle2() noexcept
