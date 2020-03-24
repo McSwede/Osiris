@@ -14,19 +14,22 @@
 
 void Misc::edgejump(UserCmd* cmd) noexcept
 {
-    if (!config.misc.edgejump || !GetAsyncKeyState(config.misc.edgejumpkey))
-        return;
+	if (!config.misc.edgejump || !GetAsyncKeyState(config.misc.edgejumpkey))
+		return;
 
-    const auto localPlayer = interfaces.entityList->getEntity(interfaces.engine->getLocalPlayer());
+	const auto localPlayer = interfaces.entityList->getEntity(interfaces.engine->getLocalPlayer());
 
-    if (!localPlayer || !localPlayer->isAlive())
-        return;
+	if (!localPlayer || !localPlayer->isAlive())
+		return;
 
-    if (const auto mt = localPlayer->moveType(); mt == MoveType::LADDER || mt == MoveType::NOCLIP)
-        return;
+	if (const auto mt = localPlayer->moveType(); mt == MoveType::LADDER || mt == MoveType::NOCLIP)
+		return;
 
-    if ((EnginePrediction::getFlags() & 1) && !(localPlayer->flags() & 1))
-        cmd->buttons |= UserCmd::IN_JUMP;
+	if ((EnginePrediction::getFlags() & 1) && !(localPlayer->flags() & 1))
+		cmd->buttons |= UserCmd::IN_JUMP;
+
+	if (!(localPlayer->flags() & 1))
+		cmd->buttons |= UserCmd::IN_DUCK;
 }
 
 void Misc::slowwalk(UserCmd* cmd) noexcept
