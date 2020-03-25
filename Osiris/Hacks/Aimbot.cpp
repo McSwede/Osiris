@@ -92,6 +92,20 @@ static bool canScan(Entity* localPlayer, Entity* entity, const Vector& destinati
     return false;
 }
 
+static void setRandomSeed(int seed) noexcept
+{
+	using randomSeedFn = void(*)(int);
+	static auto randomSeed{ reinterpret_cast<randomSeedFn>(GetProcAddress(GetModuleHandleA("vstdlib.dll"), "RandomSeed")) };
+	randomSeed(seed);
+}
+
+static float getRandom(float min, float max) noexcept
+{
+	using randomFloatFn = float(*)(float, float);
+	static auto randomFloat{ reinterpret_cast<randomFloatFn>(GetProcAddress(GetModuleHandleA("vstdlib.dll"), "RandomFloat")) };
+	return randomFloat(min, max);
+}
+
 void Aimbot::run(UserCmd* cmd) noexcept
 {
     const auto localPlayer = interfaces.entityList->getEntity(interfaces.engine->getLocalPlayer());
@@ -112,32 +126,6 @@ void Aimbot::run(UserCmd* cmd) noexcept
 
     if (!config.aimbot[weaponIndex].enabled)
         weaponIndex = 0;
-
-	if (config.aimbot[weaponIndex].enabled && config.aimbot[weaponIndex].standaloneRecoilControl) {
-
-		static Vector StaticAimPunchAngle;
-
-		if (cmd->buttons & UserCmd::IN_ATTACK && localPlayer->getShotsFired() > config.aimbot[weaponIndex].shotsFired)
-		{
-			static auto SRCSweaponRecoilScale = interfaces.cvar->findVar("weapon_recoil_scale");
-			auto CurrentAimPunchAngle = localPlayer->aimPunchAngle() * SRCSweaponRecoilScale->getFloat();
-			CurrentAimPunchAngle.x *= config.aimbot[weaponIndex].recoilControlY;
-			CurrentAimPunchAngle.y *= config.aimbot[weaponIndex].recoilControlX;
-			cmd->viewangles += (StaticAimPunchAngle - CurrentAimPunchAngle);
-			StaticAimPunchAngle = CurrentAimPunchAngle;
-		}
-		else
-		{
-			static auto SRCSweaponRecoilScale = interfaces.cvar->findVar("weapon_recoil_scale");
-			auto AfterCurrentAimPunchAngle = localPlayer->aimPunchAngle() * SRCSweaponRecoilScale->getFloat();
-			AfterCurrentAimPunchAngle.x *= config.aimbot[weaponIndex].recoilControlY;
-			AfterCurrentAimPunchAngle.y *= config.aimbot[weaponIndex].recoilControlX;
-			StaticAimPunchAngle = AfterCurrentAimPunchAngle;
-		}
-
-		interfaces.engine->setViewAngles(cmd->viewangles);
-
-	}
 
     if (!config.aimbot[weaponIndex].betweenShots && activeWeapon->nextPrimaryAttack() > memory.globalVars->serverTime())
         return;
@@ -167,7 +155,22 @@ void Aimbot::run(UserCmd* cmd) noexcept
         Vector bestTarget{ };
         auto localPlayerEyePosition = localPlayer->getEyePosition();
 
-        const auto aimPunch = activeWeapon->requiresRecoilControl() ? localPlayer->getAimPunch() : Vector{ };
+		auto aimPunch = localPlayer->getAimPunch();
+		if (config.aimbot[weaponIndex].standaloneRecoilControl && !config.aimbot[weaponIndex].silent) {
+			static Vector lastAimPunch{ };
+			if (localPlayer->getShotsFired() > config.aimbot[weaponIndex].shotsFired) {
+				setRandomSeed(*memory.predictionRandomSeed);
+				Vector currentPunch{ lastAimPunch.x - aimPunch.x, lastAimPunch.y - aimPunch.y, 0 };
+				currentPunch.x *= getRandom(config.aimbot[weaponIndex].recoilControlY, 1.f);
+				currentPunch.y *= getRandom(config.aimbot[weaponIndex].recoilControlX, 1.f);
+				cmd->viewangles += currentPunch;
+			}
+			interfaces.engine->setViewAngles(cmd->viewangles);
+			lastAimPunch = aimPunch;
+		}
+		else {
+			aimPunch = activeWeapon->requiresRecoilControl() ? localPlayer->getAimPunch() : Vector{ };
+		}
 
         for (int i = 1; i <= interfaces.engine->getMaxClients(); i++) {
             auto entity = interfaces.entityList->getEntity(i);
