@@ -583,3 +583,20 @@ void Misc::killMessage(GameEvent& event) noexcept
     cmd += "\"";
     interfaces.engine->clientCmdUnrestricted(cmd.c_str());
 }
+
+void Misc::knifeLeft() noexcept
+{
+	static auto left_knife{ interfaces.cvar->findVar("cl_righthand") };
+	const auto localPlayer = interfaces.entityList->getEntity(interfaces.engine->getLocalPlayer());
+
+	if (!localPlayer || !localPlayer->isAlive())
+	{
+		left_knife->setValue(1);
+		return;
+	}
+
+	auto weapon = localPlayer->getActiveWeapon();
+	if (!weapon) return;
+
+	left_knife->setValue(!weapon->isKnife());
+}

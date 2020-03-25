@@ -38,6 +38,7 @@ namespace Misc
     void fixTabletSignal() noexcept;
     void fakePrime() noexcept;
     void killMessage(GameEvent& event) noexcept;
+	void knifeLeft() noexcept;
 
     constexpr void fixMovement(UserCmd* cmd, float yaw) noexcept
     {
