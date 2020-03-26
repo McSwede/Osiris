@@ -900,6 +900,7 @@ void Config::load(size_t id) noexcept
         if (miscJson.isMember("Max angle delta")) misc.maxAngleDelta = miscJson["Max angle delta"].asFloat();
         if (miscJson.isMember("Fake prime")) misc.fakePrime = miscJson["Fake prime"].asBool();
 		if (miscJson.isMember("Draw aimbot FOV")) misc.drawAimbotFov = miscJson["Draw aimbot FOV"].asBool();
+		if (miscJson.isMember("Left Knife")) misc.leftKnife = miscJson["Left Knife"].asBool();
     }
 
     {
@@ -1643,6 +1644,7 @@ void Config::save(size_t id) const noexcept
         miscJson["Max angle delta"] = misc.maxAngleDelta;
         miscJson["Fake prime"] = misc.fakePrime;
 		miscJson["Draw aimbot FOV"] = misc.drawAimbotFov;
+		miscJson["Left Knife"] = misc.leftKnife;
     }
 
     {

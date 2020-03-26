@@ -586,6 +586,9 @@ void Misc::killMessage(GameEvent& event) noexcept
 
 void Misc::knifeLeft() noexcept
 {
+	if (!config.misc.leftKnife)
+		return;
+
 	static auto left_knife{ interfaces.cvar->findVar("cl_righthand") };
 	const auto localPlayer = interfaces.entityList->getEntity(interfaces.engine->getLocalPlayer());
 

@@ -1069,6 +1069,7 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::SliderFloat("Max angle delta", &config.misc.maxAngleDelta, 0.0f, 255.0f, "%.2f");
     ImGui::Checkbox("Fake prime", &config.misc.fakePrime);
 	ImGui::Checkbox("Draw aimbot FOV", &config.misc.drawAimbotFov);
+	ImGui::Checkbox("Left Knife", &config.misc.leftKnife);
 
     if (ImGui::Button("Unhook"))
         hooks.restore();

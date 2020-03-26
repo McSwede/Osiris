@@ -277,6 +277,7 @@ public:
         float maxAngleDelta{ 255.0f };
         bool fakePrime{ false };
 		bool drawAimbotFov{ false };
+		bool leftKnife{ false };
     } misc;
 
     struct {
