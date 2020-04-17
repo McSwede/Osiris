@@ -989,7 +989,7 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::SetColumnOffset(1, 230.0f);
     ImGui::TextUnformatted("Menu key");
     ImGui::SameLine();
-    hotkey(config.misc.menuKey);
+    hotkey(config->misc.menuKey);
 
     ImGui::Checkbox("Anti AFK kick", &config->misc.antiAfkKick);
     ImGui::Checkbox("Auto strafe", &config->misc.autoStrafe);
@@ -1131,9 +1131,9 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
 	ImGui::PushItemWidth(160.0f);
 
 	if (ImGui::Button("Reload configs", { 160.0F, 25.0F }))
-		config = Config("Trigon");
+		config = std::make_unique<Config>("Trigon");
 
-	constexpr auto& configItems = config->getConfigs();
+	auto& configItems = config->getConfigs();
 	static int currentConfig = -1;
 
 	if (static_cast<size_t>(currentConfig) >= configItems.size())
