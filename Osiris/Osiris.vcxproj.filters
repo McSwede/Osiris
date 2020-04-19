@@ -119,6 +119,9 @@
     <ClCompile Include="Hacks\EnginePrediction.cpp">
       <Filter>Hacks</Filter>
     </ClCompile>
+    <ClCompile Include="AntiDetection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GUI.h">
@@ -366,6 +369,9 @@
     </ClInclude>
     <ClInclude Include="SDK\LocalPlayer.h">
       <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="AntiDetection.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
