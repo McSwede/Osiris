@@ -280,6 +280,7 @@ public:
         bool fakePrime{ false };
 		bool drawAimbotFov{ false };
 		bool leftKnife{ false };
+        std::string customHitSound;
     } misc;
 
     struct {
