@@ -393,6 +393,8 @@ void GUI::renderTriggerbotWindow(bool contentOnly) noexcept
     config->triggerbot[currentWeapon].minDamage = std::clamp(config->triggerbot[currentWeapon].minDamage, 0, 250);
     ImGui::Checkbox("Killshot", &config->triggerbot[currentWeapon].killshot);
     ImGui::SliderFloat("Burst Time", &config->triggerbot[currentWeapon].burstTime, 0.0f, 0.5f, "%.3f s");
+	ImGui::SliderFloat("Max aim inaccuracy", &config->triggerbot[currentWeapon].maxAimInaccuracy, 0.0f, 1.0f, "%.5f", 2.0f);
+	ImGui::SliderFloat("Max shot inaccuracy", &config->triggerbot[currentWeapon].maxShotInaccuracy, 0.0f, 1.0f, "%.5f", 2.0f);
 
     if (!contentOnly)
         ImGui::End();
@@ -665,6 +667,7 @@ void GUI::renderEspWindow(bool contentOnly) noexcept
             ImGui::Combo("", &config->esp.weapon.boxType, "2D\0""2D corners\0""3D\0""3D corners\0");
             ImGuiCustom::colorPicker("Name", config->esp.weapon.name);
             ImGui::SameLine(spacing);
+            ImGuiCustom::colorPicker("Ammo", config->esp.weapon.ammo);
             ImGuiCustom::colorPicker("Outline", config->esp.weapon.outline);
             ImGuiCustom::colorPicker("Distance", config->esp.weapon.distance);
             ImGui::SliderFloat("Max distance", &config->esp.weapon.maxDistance, 0.0f, 200.0f, "%.2fm");
@@ -989,7 +992,7 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::SetColumnOffset(1, 230.0f);
     ImGui::TextUnformatted("Menu key");
     ImGui::SameLine();
-    hotkey(config.misc.menuKey);
+    hotkey(config->misc.menuKey);
 
     ImGui::Checkbox("Anti AFK kick", &config->misc.antiAfkKick);
     ImGui::Checkbox("Auto strafe", &config->misc.autoStrafe);
@@ -1137,9 +1140,9 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
 	ImGui::PushItemWidth(160.0f);
 
 	if (ImGui::Button("Reload configs", { 160.0F, 25.0F }))
-		config = Config("Trigon");
+		config = std::make_unique<Config>("Trigon");
 
-	constexpr auto& configItems = config->getConfigs();
+	auto& configItems = config->getConfigs();
 	static int currentConfig = -1;
 
 	if (static_cast<size_t>(currentConfig) >= configItems.size())

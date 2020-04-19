@@ -294,16 +294,16 @@ void Misc::drawBombTimer() noexcept
 
 void Misc::drawBombDamage() noexcept
 {
-	if (!config.misc.bombDamage) return;
+	if (!config->misc.bombDamage) return;
 
-	const auto localPlayer = interfaces.entityList->getEntity(interfaces.engine->getLocalPlayer());
+	const auto localPlayer = interfaces->entityList->getEntity(interfaces->engine->getLocalPlayer());
 
 		//No Alive return since it is useful if you want to call it out to a mate that he will die
 		if (!localPlayer) return;
 
-	for (int i = interfaces.engine->getMaxClients(); i <= interfaces.entityList->getHighestEntityIndex(); i++)
+	for (int i = interfaces->engine->getMaxClients(); i <= interfaces->entityList->getHighestEntityIndex(); i++)
 	{
-		auto entity = interfaces.entityList->getEntity(i);
+		auto entity = interfaces->entityList->getEntity(i);
 		if (!entity || entity->isDormant() || entity->getClientClass()->classId != ClassId::PlantedC4 || !entity->
 			c4Ticking())
 			continue;
@@ -333,26 +333,24 @@ void Misc::drawBombDamage() noexcept
 		//Could get the specator target here as well and set the color based on the spaceted player
 		//I'm too lazy for that tho, green while you are dead just looks nicer
 		if (localPlayer->isAlive() && bombDamage >= localPlayer->health())
-			interfaces.surface->setTextColor(255, 0, 0);
+			interfaces->surface->setTextColor(255, 0, 0);
 		else
-			interfaces.surface->setTextColor(0, 255, 0);
+			interfaces->surface->setTextColor(0, 255, 0);
 
 		auto bombDmgText{ (std::wstringstream{} << L"Bomb Damage: " << bombDamage).str() };
 
 		constexpr unsigned font{ 0xc1 };
-		interfaces.surface->setTextFont(font);
+		interfaces->surface->setTextFont(font);
 
-		auto drawPositionY{ interfaces.surface->getScreenSize().second / 8 };
+		auto drawPositionY{ interfaces->surface->getScreenSize().second / 8 };
 		const auto bombDmgX{
-			interfaces.surface->getScreenSize().first / 2 - static_cast<int>((interfaces
-																			  .surface->getTextSize(
-																				  font, bombDmgText.c_str())).first / 2)
+			interfaces->surface->getScreenSize().first / 2 - static_cast<int>((interfaces->surface->getTextSize(font, bombDmgText.c_str())).first / 2)
 		};
 
-		drawPositionY -= interfaces.surface->getTextSize(font, bombDmgText.c_str()).second;
+		drawPositionY -= interfaces->surface->getTextSize(font, bombDmgText.c_str()).second;
 
-		interfaces.surface->setTextPosition(bombDmgX, drawPositionY);
-		interfaces.surface->printText(bombDmgText.c_str());
+		interfaces->surface->setTextPosition(bombDmgX, drawPositionY);
+		interfaces->surface->printText(bombDmgText.c_str());
 	}
 }
 
@@ -477,17 +475,17 @@ void Misc::humanBunnyHop(UserCmd* cmd) noexcept
 	static int hops_restricted = 0;
 	static int hops_hit = 0;
 
-	if (auto localPlayer = interfaces.entityList->getEntity(interfaces.engine->getLocalPlayer()); config.misc.humanBunnyHop
+	if (auto localPlayer = interfaces->entityList->getEntity(interfaces->engine->getLocalPlayer()); config->misc.humanBunnyHop
 
 		&& localPlayer->moveType() != MoveType::LADDER) {
 		if (cmd->buttons & UserCmd::IN_JUMP && !(localPlayer->flags() & 1)) {
 			cmd->buttons &= ~UserCmd::IN_JUMP;
 			hops_restricted = 0;
 		}
-		else if ((rand() % 100 > config.misc.bhop_hit_chance			//chance of hitting first hop is always the same, the 2nd part is that so it always doesn't rape your speed
-			&& hops_restricted < config.misc.hops_restricted_limit)	//the same amount, it can be made a constant if you want to or can be removed, up to you
-			|| (config.misc.max_hops_hit > 0							//force fuck up after certain amount of hops to look more legit, you could add variance to this and
-				&& hops_hit > config.misc.max_hops_hit))				//everything but fuck off that's too much customisation in my opinion, i only added this one because prof told me to
+		else if ((rand() % 100 > config->misc.bhop_hit_chance			//chance of hitting first hop is always the same, the 2nd part is that so it always doesn't rape your speed
+			&& hops_restricted < config->misc.hops_restricted_limit)	//the same amount, it can be made a constant if you want to or can be removed, up to you
+			|| (config->misc.max_hops_hit > 0							//force fuck up after certain amount of hops to look more legit, you could add variance to this and
+				&& hops_hit > config->misc.max_hops_hit))				//everything but fuck off that's too much customisation in my opinion, i only added this one because prof told me to
 		{
 			cmd->buttons &= ~UserCmd::IN_JUMP;
 			hops_restricted++;
@@ -718,11 +716,11 @@ void Misc::playHitSound(GameEvent& event) noexcept
 
 void Misc::knifeLeft() noexcept
 {
-	if (!config.misc.leftKnife)
+	if (!config->misc.leftKnife)
 		return;
 
-	static auto left_knife{ interfaces.cvar->findVar("cl_righthand") };
-	const auto localPlayer = interfaces.entityList->getEntity(interfaces.engine->getLocalPlayer());
+	static auto left_knife{ interfaces->cvar->findVar("cl_righthand") };
+	const auto localPlayer = interfaces->entityList->getEntity(interfaces->engine->getLocalPlayer());
 
 	if (!localPlayer || !localPlayer->isAlive())
 	{
@@ -734,4 +732,22 @@ void Misc::knifeLeft() noexcept
 	if (!weapon) return;
 
 	left_knife->setValue(!weapon->isKnife());
+}
+
+void Misc::drawAimbotFov() noexcept
+{
+	if (config->misc.drawAimbotFov && interfaces->engine->isInGame())
+	{
+		auto localPlayer = interfaces->entityList->getEntity(interfaces->engine->getLocalPlayer());
+		if (!localPlayer || !localPlayer->isAlive() || !localPlayer->getActiveWeapon()) return;
+		int weaponId = getWeaponIndex(localPlayer->getActiveWeapon()->itemDefinitionIndex2());
+		if (!config->aimbot[weaponId].enabled) weaponId = 0;
+		if (!config->aimbot[weaponId].enabled) return;
+		auto [width, heigth] = interfaces->surface->getScreenSize();
+		if (config->aimbot[weaponId].silent)
+			interfaces->surface->setDrawColor(255, 10, 10, 255);
+		else interfaces->surface->setDrawColor(10, 255, 10, 255);
+		float radius = std::tan(degreesToRadians(config->aimbot[weaponId].fov / 2.f)) / std::tan(degreesToRadians(Misc::actualFov / 2.f)) * width;
+		interfaces->surface->drawOutlinedCircle(width / 2, heigth / 2, radius, 100);
+	}
 }

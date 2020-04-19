@@ -14,6 +14,8 @@
 
 namespace Misc
 {
+	static float actualFov = 0.0f;
+
     void edgejump(UserCmd* cmd) noexcept;
     void slowwalk(UserCmd* cmd) noexcept;
     void inverseRagdollGravity() noexcept;
@@ -50,24 +52,5 @@ namespace Misc
     void moonwalk(UserCmd* cmd) noexcept;
     void playHitSound(GameEvent& event) noexcept;
     void knifeLeft() noexcept;
-
-	static float actualFov = 0.0f;
-
-	constexpr void drawAimbotFov() noexcept
-	{
-		if (config.misc.drawAimbotFov && interfaces.engine->isInGame())
-		{
-			auto localPlayer = interfaces.entityList->getEntity(interfaces.engine->getLocalPlayer());
-			if (!localPlayer || !localPlayer->isAlive() || !localPlayer->getActiveWeapon()) return;
-			int weaponId = getWeaponIndex(localPlayer->getActiveWeapon()->itemDefinitionIndex2());
-			if (!config.aimbot[weaponId].enabled) weaponId = 0;
-			if (!config.aimbot[weaponId].enabled) return;
-			auto [width, heigth] = interfaces.surface->getScreenSize();
-			if (config.aimbot[weaponId].silent)
-				interfaces.surface->setDrawColor(255, 10, 10, 255);
-			else interfaces.surface->setDrawColor(10, 255, 10, 255);
-			float radius = std::tan(degreesToRadians(config.aimbot[weaponId].fov / 2.f)) / std::tan(degreesToRadians(actualFov / 2.f)) * width;
-			interfaces.surface->drawOutlinedCircle(width / 2, heigth / 2, radius, 100);
-		}
-	}
+	void drawAimbotFov() noexcept;
 }

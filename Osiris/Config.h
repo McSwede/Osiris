@@ -75,6 +75,8 @@ public:
         int shotDelay = 0;
         int minDamage = 1;
         float burstTime = 0.0f;
+		float maxAimInaccuracy{ 1.0f };
+		float maxShotInaccuracy{ 1.0f };
     };
     std::array<Triggerbot, 40> triggerbot;
 
@@ -125,6 +127,7 @@ public:
             ColorToggle box;
             int boxType{ 0 };
             ColorToggle name;
+            ColorToggle ammo;
             ColorToggle outline{ 0.0f, 0.0f, 0.0f };
             ColorToggle distance;
             float maxDistance{ 0.0f };
