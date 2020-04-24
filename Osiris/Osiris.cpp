@@ -19,6 +19,7 @@ static LRESULT WINAPI init(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) 
     netvars = std::make_unique<Netvars>();
     hooks = std::make_unique<Hooks>(module);
 	antiDetection = std::make_unique<AntiDetection>();
+    hooks->install();
 
     return CallWindowProc(originalWndproc, window, msg, wParam, lParam);
 }

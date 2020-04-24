@@ -1,16 +1,8 @@
 #pragma once
 
-#include "../Memory.h"
-#include "../Interfaces.h"
-#include "../SDK/FrameStage.h"
-#include "../SDK/UserCmd.h"
-#include "../SDK/WeaponId.h"
-#include "../SDK/NetworkChannel.h"
-#include "../SDK/Entity.h"
-#include "../SDK/Client.h"
-#include "../SDK/GameEvent.h"
-#include "../SDK/GlobalVars.h"
-#include "../SDK/Surface.h"
+enum class FrameStage;
+class GameEvent;
+struct UserCmd;
 
 namespace Misc
 {
