@@ -45,4 +45,5 @@ namespace Misc
     void playHitSound(GameEvent& event) noexcept;
     void knifeLeft() noexcept;
 	void drawAimbotFov() noexcept;
+    void killSound(GameEvent& event) noexcept;
 }

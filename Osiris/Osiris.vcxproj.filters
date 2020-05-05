@@ -121,6 +121,8 @@
     </ClCompile>
     <ClCompile Include="AntiDetection.cpp">
       <Filter>Source Files</Filter>
+    <ClCompile Include="SDK\KeyValues.cpp">
+      <Filter>SDK</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -372,6 +374,8 @@
     </ClInclude>
     <ClInclude Include="AntiDetection.h">
       <Filter>Header Files</Filter>
+    <ClInclude Include="SDK\KeyValues.h">
+      <Filter>SDK</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
