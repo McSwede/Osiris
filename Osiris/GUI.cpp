@@ -29,7 +29,11 @@ GUI::GUI() noexcept
     ImGui::StyleColorsDark();
     ImGuiStyle& style = ImGui::GetStyle();
 
-    style.ScrollbarSize = 9.0f;
+	style.WindowRounding = 0.0f;
+	style.GrabRounding = 0.0f;
+	style.FrameRounding = 0.0f;
+	style.PopupRounding = 0.0f;
+	style.ScrollbarSize = 9.0f;
 
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = nullptr;
