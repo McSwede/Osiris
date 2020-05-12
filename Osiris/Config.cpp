@@ -152,6 +152,8 @@ void Config::load(size_t id) noexcept
 
         if (espJson.isMember("Enabled")) espConfig.enabled = espJson["Enabled"].asBool();
         if (espJson.isMember("Font")) espConfig.font = espJson["Font"].asInt();
+        if (espJson.isMember("HP side")) espConfig.hpside = espJson["HP side"].asInt();
+        if (espJson.isMember("Armor side")) espConfig.armorside = espJson["Armor side"].asInt();
 
         if (espJson.isMember("Snaplines")) {
             const auto& snaplinesJson = espJson["Snaplines"];
@@ -913,6 +915,19 @@ void Config::load(size_t id) noexcept
         if (miscJson.isMember("Custom Hit Sound")) misc.customHitSound = miscJson["Custom Hit Sound"].asString();
         if (miscJson.isMember("Kill sound")) misc.killSound = miscJson["Kill sound"].asInt();
         if (miscJson.isMember("Custom Kill Sound")) misc.customKillSound = miscJson["Custom Kill Sound"].asString();
+
+        if (const auto& purchaseList = miscJson["Purchase List"]; purchaseList.isObject()) {
+            if (const auto& enabled{ purchaseList["Enabled"] }; enabled.isBool())
+                misc.purchaseList.enabled = enabled.asBool();
+            if (const auto& onlyDuringFreezeTime{ purchaseList["Only During Freeze Time"] }; onlyDuringFreezeTime.isBool())
+                misc.purchaseList.onlyDuringFreezeTime = onlyDuringFreezeTime.asBool();
+            if (const auto& showPrices{ purchaseList["Show Prices"] }; showPrices.isBool())
+                misc.purchaseList.showPrices = showPrices.asBool();
+            if (const auto& noTitleBar{ purchaseList["No Title Bar"] }; noTitleBar.isBool())
+                misc.purchaseList.noTitleBar = noTitleBar.asBool();
+            if (const auto& mode{ purchaseList["Mode"] }; mode.isInt())
+                misc.purchaseList.mode = mode.asInt();
+        }
     }
 
     {
@@ -1060,6 +1075,8 @@ void Config::save(size_t id) const noexcept
 
         espJson["Enabled"] = espConfig.enabled;
         espJson["Font"] = espConfig.font;
+        espJson["HP side"] = espConfig.hpside;
+        espJson["Armor side"] = espConfig.armorside;
 
         {
             auto& snaplinesJson = espJson["Snaplines"];
@@ -1673,6 +1690,15 @@ void Config::save(size_t id) const noexcept
         miscJson["Custom Hit Sound"] = misc.customHitSound;
         miscJson["Kill sound"] = misc.killSound;
         miscJson["Custom Kill Sound"] = misc.customKillSound;
+
+        {
+            auto& purchaseListJson = miscJson["Purchase List"];
+            purchaseListJson["Enabled"] = misc.purchaseList.enabled;
+            purchaseListJson["Only During Freeze Time"] = misc.purchaseList.onlyDuringFreezeTime;
+            purchaseListJson["Show Prices"] = misc.purchaseList.showPrices;
+            purchaseListJson["No Title Bar"] = misc.purchaseList.noTitleBar;
+            purchaseListJson["Mode"] = misc.purchaseList.mode;
+        }
     }
 
     {

@@ -9,6 +9,7 @@
 #include "imgui/imgui_impl_win32.h"
 
 #include "Config.h"
+#include "EventListener.h"
 #include "GUI.h"
 #include "Hooks.h"
 #include "Interfaces.h"
@@ -77,6 +78,8 @@ static HRESULT __stdcall present(IDirect3DDevice9* device, const RECT* src, cons
     ImGui_ImplDX9_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
+
+    Misc::purchaseList();
 
     if (gui->open)
         gui->render();
@@ -371,7 +374,7 @@ static int __stdcall listLeavesInBox(const Vector& mins, const Vector& maxs, uns
 {
     if (std::uintptr_t(_ReturnAddress()) == memory->listLeaves) {
         if (const auto info = *reinterpret_cast<RenderableInfo**>(std::uintptr_t(_AddressOfReturnAddress()) + 0x14); info && info->renderable) {
-            if (const auto ent = callVirtualMethod<Entity*>(info->renderable - 4, 7); ent && ent->isPlayer()) {
+            if (const auto ent = VirtualMethod::call<Entity*, 7>(info->renderable - 4); ent && ent->isPlayer()) {
                 if (config->misc.disableModelOcclusion) {
                     // FIXME: sometimes players are rendered above smoke, maybe sort render list?
                     info->flags &= ~0x100;
@@ -520,7 +523,26 @@ void Hooks::install() noexcept
     }
 }
 
-void Hooks::restore() noexcept
+static DWORD WINAPI unload(HMODULE module) noexcept
+{
+    Sleep(100);
+
+    interfaces->inputSystem->enableInput(true);
+    ImGui_ImplDX9_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
+
+    hooks.reset();
+    eventListener.reset();
+    memory.reset();
+    interfaces.reset();
+    gui.reset();
+    config.reset();
+
+    FreeLibraryAndExitThread(module, 0);
+}
+
+void Hooks::uninstall() noexcept
 {
     bspQuery.restore();
     client.restore();
@@ -547,7 +569,8 @@ void Hooks::restore() noexcept
         VirtualProtect(memory->dispatchSound, 4, oldProtection, nullptr);
     }
 
-    interfaces->inputSystem->enableInput(true);
+    if (HANDLE thread = CreateThread(nullptr, 0, LPTHREAD_START_ROUTINE(unload), module, 0, nullptr))
+        CloseHandle(thread);
 }
 
 uintptr_t* Hooks::Vmt::findFreeDataPage(void* const base, size_t vmtSize) noexcept
