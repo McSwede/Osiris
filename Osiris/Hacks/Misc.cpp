@@ -107,41 +107,40 @@ void Misc::updateClanTag(bool tagChanged) noexcept
     }
 }
 
-void Misc::spectatorList() noexcept
+void Misc::spectatorList() noexcept //TODO: fix speclist when spectating other players
 {
-	if (config->misc.spectatorList.enabled && interfaces->engine->isInGame()) {
-		auto localPlayer = interfaces->entityList->getEntity(interfaces->engine->getLocalPlayer());
+	if (!config->misc.spectatorList.enabled)
+		return;
 
-		if (!localPlayer->isAlive()) {
-			if (!localPlayer->getObserverTarget())
-				return;
-			localPlayer = localPlayer->getObserverTarget();
-		}
+	if (!localPlayer || !localPlayer->isAlive())
+		return;
 
-		interfaces->surface->setTextFont(Surface::font);
+	interfaces->surface->setTextFont(Surface::font);
 
-		if (config->misc.spectatorList.rainbow)
-			interfaces->surface->setTextColor(rainbowColor(memory->globalVars->realtime, config->misc.spectatorList.rainbowSpeed));
-		else
-			interfaces->surface->setTextColor(config->misc.spectatorList.color);
+	if (config->misc.spectatorList.rainbow)
+		interfaces->surface->setTextColor(rainbowColor(memory->globalVars->realtime, config->misc.spectatorList.rainbowSpeed));
+	else
+		interfaces->surface->setTextColor(config->misc.spectatorList.color);
 
-		const auto [width, height] = interfaces->surface->getScreenSize();
+	const auto [width, height] = interfaces->surface->getScreenSize();
 
-		int textPositionY{ static_cast<int>(0.5f * height) };
+	auto textPositionY = static_cast<int>(0.5f * height);
 
-		for (int i = 1; i <= interfaces->engine->getMaxClients(); ++i) {
-			auto entity = interfaces->entityList->getEntity(i);
-			if (!entity || entity->isAlive() || entity->isDormant())
-				continue;
+	for (int i = 1; i <= interfaces->engine->getMaxClients(); ++i) {
+		const auto entity = interfaces->entityList->getEntity(i);
+		if (!entity || entity->isDormant() || entity->isAlive() || entity->getObserverTarget() != localPlayer.get())
+			continue;
 
-			if (PlayerInfo playerInfo; interfaces->engine->getPlayerInfo(i, playerInfo) && entity->getObserverTarget() == localPlayer && !playerInfo.fakeplayer) {
-				if (wchar_t name[128]; MultiByteToWideChar(CP_UTF8, 0, playerInfo.name, -1, name, 128)) {
-					const auto [textWidth, textHeight] = interfaces->surface->getTextSize(Surface::font, name);
-					interfaces->surface->setTextPosition(width - textWidth - 5, textPositionY);
-					textPositionY -= textHeight;
-					interfaces->surface->printText(name);
-				}
-			}
+		PlayerInfo playerInfo;
+
+		if (!interfaces->engine->getPlayerInfo(i, playerInfo))
+			continue;
+
+		if (wchar_t name[128]; MultiByteToWideChar(CP_UTF8, 0, playerInfo.name, -1, name, 128)) {
+			const auto [textWidth, textHeight] = interfaces->surface->getTextSize(Surface::font, name);
+			interfaces->surface->setTextPosition(width - textWidth - 5, textPositionY);
+			textPositionY -= textHeight;
+			interfaces->surface->printText(name);
 		}
 	}
 }
@@ -307,8 +306,6 @@ void Misc::drawBombTimer() noexcept
 void Misc::drawBombDamage() noexcept
 {
 	if (!config->misc.bombDamage) return;
-
-	const auto localPlayer = interfaces->entityList->getEntity(interfaces->engine->getLocalPlayer());
 
 		//No Alive return since it is useful if you want to call it out to a mate that he will die
 		if (!localPlayer) return;
@@ -487,7 +484,7 @@ void Misc::humanBunnyHop(UserCmd* cmd) noexcept
 	static int hops_restricted = 0;
 	static int hops_hit = 0;
 
-	if (auto localPlayer = interfaces->entityList->getEntity(interfaces->engine->getLocalPlayer()); config->misc.humanBunnyHop
+	if (config->misc.humanBunnyHop
 
 		&& localPlayer->moveType() != MoveType::LADDER) {
 		if (cmd->buttons & UserCmd::IN_JUMP && !(localPlayer->flags() & 1)) {
@@ -722,7 +719,6 @@ void Misc::knifeLeft() noexcept
 		return;
 
 	static auto left_knife{ interfaces->cvar->findVar("cl_righthand") };
-	const auto localPlayer = interfaces->entityList->getEntity(interfaces->engine->getLocalPlayer());
 
 	if (!localPlayer || !localPlayer->isAlive())
 	{
@@ -740,7 +736,6 @@ void Misc::drawAimbotFov() noexcept
 {
 	if (config->misc.drawAimbotFov && interfaces->engine->isInGame())
 	{
-		auto localPlayer = interfaces->entityList->getEntity(interfaces->engine->getLocalPlayer());
 		if (!localPlayer || !localPlayer->isAlive() || !localPlayer->getActiveWeapon()) return;
 		int weaponId = getWeaponIndex(localPlayer->getActiveWeapon()->itemDefinitionIndex2());
 		if (!config->aimbot[weaponId].enabled) weaponId = 0;
@@ -752,6 +747,7 @@ void Misc::drawAimbotFov() noexcept
 		float radius = std::tan(degreesToRadians(config->aimbot[weaponId].fov / 2.f)) / std::tan(degreesToRadians(Misc::actualFov / 2.f)) * width;
 		interfaces->surface->drawOutlinedCircle(width / 2, heigth / 2, radius, 100);
 	}
+}
     
 void Misc::killSound(GameEvent& event) noexcept
 {
