@@ -14,6 +14,7 @@
 #include "Hooks.h"
 #include "Interfaces.h"
 #include "Memory.h"
+#include "AntiDetection.h"
 
 #include "Hacks/Aimbot.h"
 #include "Hacks/AntiAim.h"
@@ -50,13 +51,15 @@ static LRESULT __stdcall wndProc(HWND window, UINT msg, WPARAM wParam, LPARAM lP
     static const auto once = [](HWND window) noexcept {
         netvars = std::make_unique<Netvars>();
         eventListener = std::make_unique<EventListener>();
-        config = std::make_unique<Config>("Osiris");
+        config = std::make_unique<Config>("Trigon");
 
         ImGui::CreateContext();
         ImGui_ImplWin32_Init(window);
         gui = std::make_unique<GUI>();
 
         hooks->install();
+
+        antiDetection = std::make_unique<AntiDetection>();
 
         return true;
     }(window);
