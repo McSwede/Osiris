@@ -40,14 +40,14 @@ void SkinChanger::initializeKits() noexcept
         if (paintKit->id < 10000) {
             if (auto pos = gameItems.find('_' + std::string{ paintKit->name.buffer } +'='); pos != std::string::npos && gameItems.substr(pos + paintKit->name.length).find('_' + std::string{ paintKit->name.buffer } +'=') == std::string::npos) {
                 if (auto weaponName = gameItems.rfind("weapon_", pos); weaponName != std::string::npos) {
-                    name.back() = ' ';
+                    name += ' ';
                     name += '(' + gameItems.substr(weaponName + 7, pos - weaponName - 7) + ')';
                 }
             }
             skinKits.emplace_back(paintKit->id, std::move(name));
         } else {
             std::string_view gloveName{ paintKit->name.buffer };
-            name.back() = ' ';
+            name += ' ';
             name += '(' + std::string{ gloveName.substr(0, gloveName.find('_')) } +')';
             gloveKits.emplace_back(paintKit->id, std::move(name));
         }
@@ -98,10 +98,9 @@ struct GetStickerAttributeBySlotIndexFloat {
         }
         return m_original(thisptr, nullptr, slot, attribute, unknown);
     }
-    static decltype(&hooked) m_original;
-};
 
-decltype(GetStickerAttributeBySlotIndexFloat::m_original) GetStickerAttributeBySlotIndexFloat::m_original;
+    inline static decltype(&hooked) m_original;
+};
 
 struct GetStickerAttributeBySlotIndexInt {
     static int __fastcall hooked(void* thisptr, void*, const int slot,
@@ -115,10 +114,8 @@ struct GetStickerAttributeBySlotIndexInt {
         return m_original(thisptr, nullptr, slot, attribute, unknown);
     }
 
-    static decltype(&hooked) m_original;
+    inline static decltype(&hooked) m_original;
 };
-
-decltype(GetStickerAttributeBySlotIndexInt::m_original) GetStickerAttributeBySlotIndexInt::m_original;
 
 void apply_sticker_changer(Entity* item) noexcept
 {
