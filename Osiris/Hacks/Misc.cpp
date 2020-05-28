@@ -107,7 +107,7 @@ void Misc::updateClanTag(bool tagChanged) noexcept
     }
 }
 
-void Misc::spectatorList() noexcept //TODO: fix speclist when spectating other players
+void Misc::spectatorList() noexcept
 {
 	if (!config->misc.spectatorList.enabled)
 		return;
@@ -128,7 +128,7 @@ void Misc::spectatorList() noexcept //TODO: fix speclist when spectating other p
 
 	for (int i = 1; i <= interfaces->engine->getMaxClients(); ++i) {
 		const auto entity = interfaces->entityList->getEntity(i);
-		if (!entity || entity->isDormant() || entity->isAlive() || entity->getObserverTarget() != localPlayer.get())
+		if (!entity || entity->isDormant() || entity->isAlive())
 			continue;
 
 		PlayerInfo playerInfo;
