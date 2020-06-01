@@ -41,6 +41,7 @@ public:
     VIRTUAL_METHOD(void, release, 1, (), (this + 8))
     VIRTUAL_METHOD(ClientClass*, getClientClass, 2, (), (this + 8))
     VIRTUAL_METHOD(void, preDataUpdate, 6, (int updateType), (this + 8, updateType))
+    VIRTUAL_METHOD(void, postDataUpdate, 7, (int updateType), (this + 8, updateType))
     VIRTUAL_METHOD(bool, isDormant, 9, (), (this + 8))
     VIRTUAL_METHOD(int, index, 10, (), (this + 8))
     VIRTUAL_METHOD(void, setDestroyedOnRecreateEntities, 13, (), (this + 8))
@@ -132,7 +133,7 @@ public:
         return trace.entity == this || trace.fraction > 0.97f;
     }
 
-    bool isEnemy() noexcept
+    [[deprecated]] bool isEnemy() noexcept
     {
         // SHOULD NEVER HAPPEN
         if (!localPlayer)
@@ -140,7 +141,9 @@ public:
 
         return memory->isOtherEnemy(this, localPlayer.get());
     }
-  
+    
+    bool isOtherEnemy(Entity* other) noexcept;
+
     VarMap* getVarMap() noexcept
     {
         return reinterpret_cast<VarMap*>(this + 0x24);
