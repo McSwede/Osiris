@@ -1207,6 +1207,7 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
 		if (ImGui::InputTextWithHint("", "config name", &buffer, ImGuiInputTextFlags_EnterReturnsTrue)) {
 			if (currentConfig != -1)
 				config->rename(currentConfig, buffer.c_str());
+		}
         ImGui::PopID();
         ImGui::NextColumn();
 
