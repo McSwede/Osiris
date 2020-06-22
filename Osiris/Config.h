@@ -96,13 +96,10 @@ public:
         float pitchAngle{ 0.0f };
     } antiAim;
 
-    struct Glow {
+    struct Glow : ColorA {
         bool enabled{ false };
         bool healthBased{ false };
-        float thickness{ 1.0f };
-        float alpha{ 1.0f };
         int style{ 0 };
-        Color color;
     };
     std::array<Glow, 21> glow;
 
@@ -239,7 +236,7 @@ public:
 		int max_hops_hit{ 5 };
         bool customClanTag{ false };
         bool clocktag{ false };
-        std::string clanTag;
+        char clanTag[16];
         bool animatedClanTag{ false };
         bool fastDuck{ false };
         bool moonwalk{ false };
