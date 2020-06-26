@@ -317,6 +317,7 @@ static void __stdcall emitSound(SoundData data) noexcept
 
 static bool __stdcall shouldDrawFog() noexcept
 {
+    if constexpr (std::is_same_v<HookType, MinHook>) {
 #ifdef _DEBUG
     // Check if we always get the same return address
     if (*static_cast<std::uint32_t*>(_ReturnAddress()) == 0x6274C084) {
@@ -327,6 +328,7 @@ static bool __stdcall shouldDrawFog() noexcept
 
     if (*static_cast<std::uint32_t*>(_ReturnAddress()) != 0x6274C084)
         return hooks->clientMode.callOriginal<bool, 17>();
+    }
 
     return !config->visuals.noFog;
 }
@@ -366,17 +368,11 @@ static void __stdcall setDrawColor(int r, int g, int b, int a) noexcept
 
 static bool __stdcall fireEventClientSide(GameEvent* event) noexcept
 {
+    // TODO: remove this hook after testing the new method of overriding knife icon
     if (event) {
         switch (fnv::hashRuntime(event->getName())) {
         case fnv::hash("player_death"):
-            Misc::killMessage(*event);
-            Misc::killSound(*event);
-            SkinChanger::overrideHudIcon(*event);
-            break;
-        case fnv::hash("player_hurt"):
-            Misc::playHitSound(*event);
-            Visuals::hitEffect(event);
-            Visuals::hitMarker(event);
+            // SkinChanger::overrideHudIcon(*event);
             break;
         }
     }
