@@ -366,19 +366,6 @@ static void __stdcall setDrawColor(int r, int g, int b, int a) noexcept
     hooks->surface.callOriginal<void, 15>(r, g, b, a);
 }
 
-static bool __stdcall fireEventClientSide(GameEvent* event) noexcept
-{
-    // TODO: remove this hook after testing the new method of overriding knife icon
-    if (event) {
-        switch (fnv::hashRuntime(event->getName())) {
-        case fnv::hash("player_death"):
-            // SkinChanger::overrideHudIcon(*event);
-            break;
-        }
-    }
-    return hooks->gameEventManager.callOriginal<bool, 9>(event);
-}
-
 struct ViewSetup {
     std::byte pad[176];
     float fov;
@@ -563,7 +550,6 @@ void Hooks::install() noexcept
     client.init(interfaces->client);
     clientMode.init(memory->clientMode);
     engine.init(interfaces->engine);
-    gameEventManager.init(interfaces->gameEventManager);
     modelRender.init(interfaces->modelRender);
     panel.init(interfaces->panel);
     sound.init(interfaces->sound);
@@ -583,7 +569,6 @@ void Hooks::install() noexcept
     engine.hookAt(82, isPlayingDemo);
     engine.hookAt(101, getScreenAspectRatio);
     engine.hookAt(218, getDemoPlaybackParameters);
-    gameEventManager.hookAt(9, fireEventClientSide);
     modelRender.hookAt(21, drawModelExecute);
     panel.hookAt(41, paintTraverse);
     sound.hookAt(5, emitSound);
@@ -632,7 +617,6 @@ void Hooks::uninstall() noexcept
     client.restore();
     clientMode.restore();
     engine.restore();
-    gameEventManager.restore();
     modelRender.restore();
     panel.restore();
     sound.restore();
