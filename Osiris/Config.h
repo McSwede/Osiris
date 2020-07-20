@@ -26,11 +26,11 @@ public:
     }
 
     struct Color {
-        float color[3]{ 1.0f, 1.0f, 1.0f };
+        std::array<float, 3> color{ 1.0f, 1.0f, 1.0f };
         bool rainbow{ false };
         float rainbowSpeed{ 0.6f };
     };
-    
+
     struct ColorToggle : public Color {
         bool enabled{ false };
     };
@@ -82,14 +82,14 @@ public:
     };
     std::array<Triggerbot, 40> triggerbot;
 
-    struct {
+    struct Backtrack {
         bool enabled{ false };
         bool ignoreSmoke{ false };
         bool recoilBasedFov{ false };
         int timeLimit{ 200 };
     } backtrack;
 
-    struct {
+    struct AntiAim {
         bool enabled{ false };
         bool pitch{ false };
         bool yaw{ false };
@@ -116,46 +116,7 @@ public:
         std::vector<Material> materials{ {}, {}, {}, {} };
     };
 
-    std::array<Chams, 18> chams;
-
-    struct Esp {
-        struct Shared {
-            bool enabled{ false };
-            int font{ 0x1d };
-            ColorToggle snaplines;
-            ColorToggle box;
-            int boxType{ 0 };
-            ColorToggle name;
-            ColorToggle ammo;
-            ColorToggle outline{ 0.0f, 0.0f, 0.0f };
-            ColorToggle distance;
-            float maxDistance{ 0.0f };
-        };
-       
-        struct Player : public Shared {
-            ColorToggle eyeTraces;
-            ColorToggle health;
-            ColorToggle healthBar;
-            ColorToggle armor;
-            ColorToggle armorBar;
-            ColorToggle money;
-            ColorToggle headDot;
-            ColorToggle activeWeapon;
-            int hpside{ 0 };
-            int armorside{ 0 };
-            bool deadesp { false };
-        };
-
-        struct Weapon : public Shared { } weapon;
-
-        struct Projectile : public Shared { };
-        std::array<Projectile, 9> projectiles;
-
-        struct DangerZone : public Shared { };
-        std::array<DangerZone, 18> dangerZone;
-
-        std::array<Player, 6> players;
-    } esp;
+    std::unordered_map<std::string, Chams> chams;
 
     struct StreamProofESP {
         std::unordered_map<std::string, Player> allies;
@@ -175,7 +136,7 @@ public:
     std::vector<std::string> systemFonts{ "Default" };
     std::unordered_map<std::string, Font> fonts;
 
-    struct {
+    struct Visuals {
         bool disablePostProcessing{ false };
         bool inverseRagdollGravity{ false };
         bool noFog{ false };
@@ -213,7 +174,7 @@ public:
         int playerModelT{ 0 };
         int playerModelCT{ 0 };
 
-        struct {
+        struct ColorCorrection {
             bool enabled = false;
             float blue = 0.0f;
             float red = 0.0f;
@@ -227,7 +188,7 @@ public:
 
     std::array<item_setting, 36> skinChanger;
 
-    struct {
+    struct Sound {
         int chickenVolume{ 100 };
 
         struct Player {
@@ -240,12 +201,12 @@ public:
         std::array<Player, 3> players;
     } sound;
 
-    struct {
+    struct Style {
         int menuStyle{ 0 };
         int menuColors{ 0 };
     } style;
 
-    struct {
+    struct Misc {
         int menuKey{ 0x2D }; // VK_INSERT
         bool antiAfkKick{ false };
         bool autoStrafe{ false };
@@ -308,7 +269,7 @@ public:
         PurchaseList purchaseList;
     } misc;
 
-    struct {
+    struct Reportbot {
         bool enabled{ false };
         bool textAbuse{ false };
         bool griefing{ false };
