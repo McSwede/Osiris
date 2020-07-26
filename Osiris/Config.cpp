@@ -718,56 +718,56 @@ static void to_json(json& j, const ImVec2& o, const ImVec2& dummy = {})
 
 static void to_json(json& j, const Config::Aimbot& o, const Config::Aimbot& dummy = {})
 {
-    WRITE("Enabled", enabled)
-    WRITE("On key", onKey)
-    WRITE("Key", key)
-    WRITE("Key mode", keyMode)
-    WRITE("Aimlock", aimlock)
-    WRITE("Silent", silent)
-    WRITE("Friendly fire", friendlyFire)
-    WRITE("Visible only", visibleOnly)
-    WRITE("Scoped only", scopedOnly)
-    WRITE("Ignore flash", ignoreFlash)
-    WRITE("Ignore smoke", ignoreSmoke)
-    WRITE("Auto shot", autoShot)
-    WRITE("Auto scope", autoScope)
-    WRITE("Fov", fov)
-    WRITE("Smooth", smooth)
-    WRITE("Bone", bone)
-    WRITE("Max aim inaccuracy", maxAimInaccuracy)
-    WRITE("Max shot inaccuracy", maxShotInaccuracy)
-    WRITE("Min damage", minDamage)
-    WRITE("Killshot", killshot)
-    WRITE("Between shots", betweenShots)
-    WRITE("Recoil control X", recoilControlX)
-    WRITE("Recoil control Y", recoilControlY)
-    WRITE("Standalone RCS", standaloneRecoilControl)
-    WRITE("Standalone RCS Ignore Shots", shotsFired)
+    WRITE("Enabled", enabled);
+    WRITE("On key", onKey);
+    WRITE("Key", key);
+    WRITE("Key mode", keyMode);
+    WRITE("Aimlock", aimlock);
+    WRITE("Silent", silent);
+    WRITE("Friendly fire", friendlyFire);
+    WRITE("Visible only", visibleOnly);
+    WRITE("Scoped only", scopedOnly);
+    WRITE("Ignore flash", ignoreFlash);
+    WRITE("Ignore smoke", ignoreSmoke);
+    WRITE("Auto shot", autoShot);
+    WRITE("Auto scope", autoScope);
+    WRITE("Fov", fov);
+    WRITE("Smooth", smooth);
+    WRITE("Bone", bone);
+    WRITE("Max aim inaccuracy", maxAimInaccuracy);
+    WRITE("Max shot inaccuracy", maxShotInaccuracy);
+    WRITE("Min damage", minDamage);
+    WRITE("Killshot", killshot);
+    WRITE("Between shots", betweenShots);
+    WRITE("Recoil control X", recoilControlX);
+    WRITE("Recoil control Y", recoilControlY);
+    WRITE("Standalone RCS", standaloneRecoilControl);
+    WRITE("Standalone RCS Ignore Shots", shotsFired);
 }
 static void to_json(json& j, const Config::Triggerbot& o, const Config::Triggerbot& dummy = {})
 {
-    WRITE("Enabled", enabled)
-    WRITE("On key", onKey)
-    WRITE("Key", key)
-    WRITE("Friendly fire", friendlyFire)
-    WRITE("Scoped only", scopedOnly)
-    WRITE("Ignore flash", ignoreFlash)
-    WRITE("Ignore smoke", ignoreSmoke)
-    WRITE("Hitgroup", hitgroup)
-    WRITE("Shot delay", shotDelay)
-    WRITE("Min damage", minDamage)
-    WRITE("Killshot", killshot)
-    WRITE("Burst Time", burstTime)
-    WRITE("Max aim inaccuracy", maxAimInaccuracy)
-    WRITE("Max shot inaccuracy", maxShotInaccuracy)
+    WRITE("Enabled", enabled);
+    WRITE("On key", onKey);
+    WRITE("Key", key);
+    WRITE("Friendly fire", friendlyFire);
+    WRITE("Scoped only", scopedOnly);
+    WRITE("Ignore flash", ignoreFlash);
+    WRITE("Ignore smoke", ignoreSmoke);
+    WRITE("Hitgroup", hitgroup);
+    WRITE("Shot delay", shotDelay);
+    WRITE("Min damage", minDamage);
+    WRITE("Killshot", killshot);
+    WRITE("Burst Time", burstTime);
+    WRITE("Max aim inaccuracy", maxAimInaccuracy);
+    WRITE("Max shot inaccuracy", maxShotInaccuracy);
 }
 static void to_json(json& j, const Config::Backtrack& o, const Config::Backtrack& dummy = {})
 {
-    WRITE("Enabled", enabled)
-    WRITE("Ignore smoke", ignoreSmoke)
-    WRITE("Recoil based fov", recoilBasedFov)
-    WRITE("Time limit", timeLimit)
-    WRITE("Fake Latency", fakeLatency)
+    WRITE("Enabled", enabled);
+    WRITE("Ignore smoke", ignoreSmoke);
+    WRITE("Recoil based fov", recoilBasedFov);
+    WRITE("Time limit", timeLimit);
+    WRITE("Fake Latency", fakeLatency);
 }
 static void to_json(json& j, const Config::AntiAim& o, const Config::AntiAim& dummy = {})
 {
