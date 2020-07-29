@@ -421,15 +421,11 @@ void GUI::renderBacktrackWindow(bool contentOnly) noexcept
         ImGui::Begin("Backtrack", &window.backtrack, windowFlags);
     }
     ImGui::Checkbox("Enabled", &config->backtrack.enabled);
-    ImGui::SameLine();
-    ImGui::Checkbox("Extend with fake ping", &config->backtrack.fakeLatency);
     ImGui::Checkbox("Ignore smoke", &config->backtrack.ignoreSmoke);
-    ImGui::SameLine();
     ImGui::Checkbox("Recoil based fov", &config->backtrack.recoilBasedFov);
-    int TimeLimitRoof = 200; if (config->backtrack.fakeLatency) { TimeLimitRoof = 400; } else { TimeLimitRoof = 200; if (config->backtrack.timeLimit >= 201) { config->backtrack.timeLimit = 200; } }
-    ImGui::PushItemWidth(220.0f); ImGui::PushID(0);
-    ImGui::SliderInt("", &config->backtrack.timeLimit, 1, TimeLimitRoof, "Time Limit %d ms");
-    ImGui::PopID(); ImGui::PopItemWidth();
+	ImGui::PushItemWidth(220.0f);
+	ImGui::SliderInt("Time limit", &config->backtrack.timeLimit, 1, 200, "%d ms");
+	ImGui::PopItemWidth();
     if (!contentOnly)
         ImGui::End();
 }
@@ -1380,26 +1376,26 @@ void GUI::renderReportbotWindow(bool contentOnly) noexcept
 
 void GUI::renderConfigWindow(bool contentOnly) noexcept
 {
-    if (!contentOnly) {
-        if (!window.config)
-            return;
-        ImGui::SetNextWindowSize({ 290.0f, 200.0f });
-        ImGui::Begin("Config", &window.config, windowFlags);
-    }
+	if (!contentOnly) {
+		if (!window.config)
+			return;
+		ImGui::SetNextWindowSize({ 290.0f, 200.0f });
+		ImGui::Begin("Config", &window.config, windowFlags);
+	}
 
 	ImGui::Columns(2, nullptr, false);
 	ImGui::SetColumnOffset(1, 170.0f);
 
 	ImGui::PushItemWidth(160.0f);
 
-    if (ImGui::Button("Reload configs", { 160.0f, 25.0f }))
-        config->listConfigs();
+	if (ImGui::Button("Reload configs", { 160.0f, 25.0f }))
+		config->listConfigs();
 
-    auto& configItems = config->getConfigs();
-    static int currentConfig = -1;
+	auto& configItems = config->getConfigs();
+	static int currentConfig = -1;
 
-    if (static_cast<std::size_t>(currentConfig) >= configItems.size())
-        currentConfig = -1;
+	if (static_cast<std::size_t>(currentConfig) >= configItems.size())
+		currentConfig = -1;
 
 	static std::string buffer;
 
@@ -1415,38 +1411,38 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
 			if (currentConfig != -1)
 				config->rename(currentConfig, buffer.c_str());
 		}
-        ImGui::PopID();
-        ImGui::NextColumn();
+		ImGui::PopID();
+		ImGui::NextColumn();
 
 		ImGui::PushItemWidth(100.0f);
 
 		if (ImGui::Button("Create config", { 100.0f, 25.0f }))
-            config->add(buffer.c_str());
+			config->add(buffer.c_str());
 
 		if (ImGui::Button("Reset config", { 100.0f, 25.0f }))
 			ImGui::OpenPopup("Config to reset");
 
-        if (ImGui::BeginPopup("Config to reset")) {
-            static constexpr const char* names[]{ "Whole", "Aimbot", "Triggerbot", "Backtrack", "Anti aim", "Glow", "Chams", "ESP", "Visuals", "Skin changer", "Sound", "Style", "Misc", "Reportbot" };
-            for (int i = 0; i < IM_ARRAYSIZE(names); i++) {
-                if (i == 1) ImGui::Separator();
+		if (ImGui::BeginPopup("Config to reset")) {
+			static constexpr const char* names[]{ "Whole", "Aimbot", "Triggerbot", "Backtrack", "Anti aim", "Glow", "Chams", "ESP", "Visuals", "Skin changer", "Sound", "Style", "Misc", "Reportbot" };
+			for (int i = 0; i < IM_ARRAYSIZE(names); i++) {
+				if (i == 1) ImGui::Separator();
 
 				if (ImGui::Selectable(names[i])) {
 					switch (i) {
 					case 0: config->reset(); updateColors(); Misc::updateClanTag(true); SkinChanger::scheduleHudUpdate(); break;
-                    case 1: config->aimbot = { }; break;
-                    case 2: config->triggerbot = { }; break;
-                    case 3: config->backtrack = { }; break;
-                    case 4: config->antiAim = { }; break;
-                    case 5: config->glow = { }; break;
-                    case 6: config->chams = { }; break;
-                    case 7: config->streamProofESP = { }; break;
-                    case 8: config->visuals = { }; break;
-                    case 9: config->skinChanger = { }; SkinChanger::scheduleHudUpdate(); break;
-                    case 10: config->sound = { }; break;
-                    case 11: config->style = { }; updateColors(); break;
-                    case 12: config->misc = { };  Misc::updateClanTag(true); break;
-                    case 13: config->reportbot = { }; break;
+					case 1: config->aimbot = { }; break;
+					case 2: config->triggerbot = { }; break;
+					case 3: config->backtrack = { }; break;
+					case 4: config->antiAim = { }; break;
+					case 5: config->glow = { }; break;
+					case 6: config->chams = { }; break;
+					case 7: config->streamProofESP = { }; break;
+					case 8: config->visuals = { }; break;
+					case 9: config->skinChanger = { }; SkinChanger::scheduleHudUpdate(); break;
+					case 10: config->sound = { }; break;
+					case 11: config->style = { }; updateColors(); break;
+					case 12: config->misc = { };  Misc::updateClanTag(true); break;
+					case 13: config->reportbot = { }; break;
 					}
 				}
 			}
@@ -1490,10 +1486,10 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
 				for (auto i = 0; i < IM_ARRAYSIZE(choices); i++)
 					if (ImGui::Selectable(choices[i]))
 						if (i == 0) {
-                            config->remove(currentConfig);
-                            currentConfig = -1;
-                            buffer.clear();
-                        };
+							config->remove(currentConfig);
+							currentConfig = -1;
+							buffer.clear();
+						};
 
 				ImGui::EndPopup();
 			}
@@ -1501,7 +1497,7 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
 		ImGui::Columns(1);
 		if (!contentOnly)
 			ImGui::End();
-
+}
 void GUI::renderGuiStyle2() noexcept
 {
     ImGui::SetNextWindowSize({ 600.0f, 0.0f });

@@ -303,7 +303,6 @@ static void from_json(const json& j, Config::Backtrack& b)
     read<value_t::boolean>(j, "Ignore smoke", b.ignoreSmoke);
     read<value_t::boolean>(j, "Recoil based fov", b.recoilBasedFov);
     read_number(j, "Time limit", b.timeLimit);
-    read<value_t::boolean>(j, "Fake Latency", b.fakeLatency);
 }
 
 static void from_json(const json& j, Config::AntiAim& a)
@@ -767,7 +766,6 @@ static void to_json(json& j, const Config::Backtrack& o, const Config::Backtrack
     WRITE("Ignore smoke", ignoreSmoke);
     WRITE("Recoil based fov", recoilBasedFov);
     WRITE("Time limit", timeLimit);
-    WRITE("Fake Latency", fakeLatency);
 }
 static void to_json(json& j, const Config::AntiAim& o, const Config::AntiAim& dummy = {})
 {
