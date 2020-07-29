@@ -162,7 +162,7 @@ void Aimbot::run(UserCmd* cmd) noexcept
 		auto aimPunch = localPlayer->getAimPunch();
 		if (config->aimbot[weaponIndex].standaloneRecoilControl && !config->aimbot[weaponIndex].silent) {
 			static Vector lastAimPunch{ };
-			if (localPlayer->getShotsFired() > config->aimbot[weaponIndex].shotsFired) {
+			if (localPlayer->shotsFired() > config->aimbot[weaponIndex].shotsFired) {
 				setRandomSeed(*memory->predictionRandomSeed);
 				Vector currentPunch{ lastAimPunch.x - aimPunch.x, lastAimPunch.y - aimPunch.y, 0 };
 				currentPunch.x *= getRandom(config->aimbot[weaponIndex].recoilControlY, 1.f);
