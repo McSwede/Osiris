@@ -88,6 +88,7 @@ public:
         bool recoilBasedFov{ false };
         int timeLimit{ 0 };
 		bool pingBased{ 0 };
+        bool fakeLatency{ false };
     } backtrack;
 
     struct AntiAim {
