@@ -89,6 +89,14 @@ public:
 	{
 		return getWeaponType() == WeaponType::Knife;
 	}
+    
+    constexpr auto isFullAuto() noexcept
+    {
+        const auto weaponData = getWeaponData();
+        if (weaponData)
+            return weaponData->fullAuto;
+        return false;
+    }
 
     constexpr auto requiresRecoilControl() noexcept
     {
