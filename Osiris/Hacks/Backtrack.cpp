@@ -45,7 +45,7 @@ void Backtrack::update(FrameStage stage) noexcept
 				if (auto networkChannel = interfaces->engine->getNetworkChannel(); networkChannel && networkChannel->getLatency(0) > 0.0f) {
                     float latency = 0.0f;
 					latency = networkChannel->getLatency(0);
-					timelimit = static_cast<int>(latency * 1000);
+					timeLimit = static_cast<int>(latency * 1000);
 				}
 			}
 

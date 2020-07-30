@@ -160,6 +160,12 @@ void Misc::spectatorList() noexcept
 	}
 }
 
+void Misc::sniperCrosshair() noexcept
+{
+	static auto showSpread = interfaces->cvar->findVar("weapon_debug_spread_show");
+	showSpread->setValue(config->misc.sniperCrosshair && localPlayer && !localPlayer->isScoped() ? 3 : 0);
+}
+
 static void drawCrosshair(ImDrawList* drawList, const ImVec2& pos, ImU32 color, float thickness) noexcept
 {
     drawList->Flags &= ~ImDrawListFlags_AntiAliasedLines;

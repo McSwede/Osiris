@@ -227,6 +227,7 @@ public:
         int edgejumpkey{ 0 };
         bool slowwalk{ false };
         int slowwalkKey{ 0 };
+		bool sniperCrosshair{ false };
         ColorToggleThickness noscopeCrosshair;
         bool recoilCrosshair{ false };
         bool autoPistol{ false };
