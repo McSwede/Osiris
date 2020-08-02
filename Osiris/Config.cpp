@@ -1091,40 +1091,40 @@ static void to_json(json& j, const Config::Wpos& o)
 {
     const Config::Wpos dummy;
 
-    WRITE("wpos Aimbot X", AimbotX) WRITE("wpos Aimbot Y", AimbotY)
-    WRITE("wpos AntiAim X", AntiAimX) WRITE("wpos AntiAim Y", AntiAimY)
-    WRITE("wpos TriggerBot X", TriggerBotX) WRITE("wpos TriggerBot Y", TriggerBotY)
-    WRITE("wpos Backtrack X", BacktrackX) WRITE("wpos Backtrack Y", BacktrackY)
-    WRITE("wpos Glow X", GlowX) WRITE("wpos Glow Y", GlowY)
-    WRITE("wpos Chams X", ChamsX) WRITE("wpos Chams Y", ChamsY)
-    WRITE("wpos ESP X", EspX) WRITE("wpos ESP Y", EspY)
-    WRITE("wpos Visuals X", VisualsX) WRITE("wpos Visuals Y", VisualsY)
-    WRITE("wpos Skinchanger X", SkinchangerX) WRITE("wpos Skinchanger Y", SkinchangerY)
-    WRITE("wpos Sound X", SoundX) WRITE("wpos Sound Y", SoundY)
-    WRITE("wpos Style X", StyleX) WRITE("wpos Style Y", StyleY)
-    WRITE("wpos Misc X", MiscX) WRITE("wpos Misc Y", MiscY)
-    WRITE("wpos Reportbot X", ReportbotX) WRITE("wpos Reportbot Y", ReportbotY)
-    WRITE("wpos Config X", ConfigX) WRITE("wpos Config Y", ConfigY)
-    WRITE("wpos Style2 X", Style2X) WRITE("wpos Style2 Y", Style2Y)
-    WRITE("wpos PurchaseList X", PurchaseListX) WRITE("wpos PurchaseList Y", PurchaseListY)
-    WRITE("wpos PurchaseList ScaleX", PurchaseListScaleX) WRITE("wpos PurchaseList ScaleY", PurchaseListScaleY)
+	WRITE("wpos Aimbot X", AimbotX); WRITE("wpos Aimbot Y", AimbotY);
+    WRITE("wpos AntiAim X", AntiAimX); WRITE("wpos AntiAim Y", AntiAimY);
+    WRITE("wpos TriggerBot X", TriggerBotX); WRITE("wpos TriggerBot Y", TriggerBotY);
+    WRITE("wpos Backtrack X", BacktrackX); WRITE("wpos Backtrack Y", BacktrackY);
+    WRITE("wpos Glow X", GlowX); WRITE("wpos Glow Y", GlowY);
+    WRITE("wpos Chams X", ChamsX); WRITE("wpos Chams Y", ChamsY);
+    WRITE("wpos ESP X", EspX); WRITE("wpos ESP Y", EspY);
+    WRITE("wpos Visuals X", VisualsX); WRITE("wpos Visuals Y", VisualsY);
+    WRITE("wpos Skinchanger X", SkinchangerX); WRITE("wpos Skinchanger Y", SkinchangerY);
+    WRITE("wpos Sound X", SoundX); WRITE("wpos Sound Y", SoundY);
+    WRITE("wpos Style X", StyleX); WRITE("wpos Style Y", StyleY);
+    WRITE("wpos Misc X", MiscX); WRITE("wpos Misc Y", MiscY);
+    WRITE("wpos Reportbot X", ReportbotX); WRITE("wpos Reportbot Y", ReportbotY);
+    WRITE("wpos Config X", ConfigX); WRITE("wpos Config Y", ConfigY);
+    WRITE("wpos Style2 X", Style2X); WRITE("wpos Style2 Y", Style2Y);
+    WRITE("wpos PurchaseList X", PurchaseListX); WRITE("wpos PurchaseList Y", PurchaseListY);
+    WRITE("wpos PurchaseList ScaleX", PurchaseListScaleX); WRITE("wpos PurchaseList ScaleY", PurchaseListScaleY);
     //
-    WRITE("wpos Aimbot Lock", LockSelectedFlags[0])
-    WRITE("wpos Anti Aim Lock", LockSelectedFlags[1])
-    WRITE("wpos Triggerbot Lock", LockSelectedFlags[2])
-    WRITE("wpos Backtrack Lock", LockSelectedFlags[3])
-    WRITE("wpos Glow Lock", LockSelectedFlags[4])
-    WRITE("wpos Chams Lock", LockSelectedFlags[5])
-    WRITE("wpos Esp Lock", LockSelectedFlags[6])
-    WRITE("wpos Visuals Lock", LockSelectedFlags[7])
-    WRITE("wpos Skinchanger Lock", LockSelectedFlags[8])
-    WRITE("wpos Sound Lock", LockSelectedFlags[9])
-    WRITE("wpos Style Lock", LockSelectedFlags[10])
-    WRITE("wpos Misc Lock", LockSelectedFlags[11])
-    WRITE("wpos Reportbot Lock", LockSelectedFlags[12])
-    WRITE("wpos Config Lock", LockSelectedFlags[13])
-    WRITE("wpos Style2 Lock", LockSelectedFlags[14])
-    WRITE("wpos PurchaseList Lock", LockSelectedFlags[15])
+    WRITE("wpos Aimbot Lock", LockSelectedFlags[0]);
+    WRITE("wpos Anti Aim Lock", LockSelectedFlags[1]);
+    WRITE("wpos Triggerbot Lock", LockSelectedFlags[2]);
+    WRITE("wpos Backtrack Lock", LockSelectedFlags[3]);
+    WRITE("wpos Glow Lock", LockSelectedFlags[4]);
+    WRITE("wpos Chams Lock", LockSelectedFlags[5]);
+    WRITE("wpos Esp Lock", LockSelectedFlags[6]);
+    WRITE("wpos Visuals Lock", LockSelectedFlags[7]);
+    WRITE("wpos Skinchanger Lock", LockSelectedFlags[8]);
+    WRITE("wpos Sound Lock", LockSelectedFlags[9]);
+    WRITE("wpos Style Lock", LockSelectedFlags[10]);
+    WRITE("wpos Misc Lock", LockSelectedFlags[11]);
+    WRITE("wpos Reportbot Lock", LockSelectedFlags[12]);
+    WRITE("wpos Config Lock", LockSelectedFlags[13]);
+    WRITE("wpos Style2 Lock", LockSelectedFlags[14]);
+    WRITE("wpos PurchaseList Lock", LockSelectedFlags[15]);
 }
 
 void Config::save(size_t id) const noexcept
