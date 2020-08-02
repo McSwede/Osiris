@@ -113,7 +113,7 @@ static float getRandom(float min, float max) noexcept
 
 void Aimbot::run(UserCmd* cmd) noexcept
 {
-    if (!localPlayer || localPlayer->nextAttack() > memory->globalVars->serverTime())
+    if (!localPlayer || localPlayer->nextAttack() > memory->globalVars->serverTime() || localPlayer->isDefusing() || localPlayer->waitForNoAttack())
         return;
 
     const auto activeWeapon = localPlayer->getActiveWeapon();
