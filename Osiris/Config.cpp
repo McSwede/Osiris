@@ -567,6 +567,7 @@ static void from_json(const json& j, Config::Misc& m)
     read(j, "Fake prime", m.fakePrime);
 	read(j, "Draw aimbot FOV", m.drawAimbotFov);
 	read(j, "Left Knife", m.leftKnife);
+	read(j, "Fast Stop", m.fastStop);
     read(j, "Fix tablet signal", m.fixTabletSignal);
     read<value_t::object>(j, "Custom Hit Sound", m.customHitSound);
     read(j, "Kill sound", m.killSound);
@@ -984,6 +985,7 @@ static void to_json(json& j, const Config::Misc& o)
     WRITE("Fake prime", fakePrime);
     WRITE("Draw aimbot FOV", drawAimbotFov);
     WRITE("Left Knife", leftKnife);
+	WRITE("Fast Stop", fastStop);
     WRITE("Fix tablet signal", fixTabletSignal);
     WRITE("Custom Hit Sound", customHitSound);
     WRITE("Kill sound", killSound);

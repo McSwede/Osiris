@@ -270,6 +270,7 @@ public:
         std::string customKillSound;
         std::string customHitSound;
         PurchaseList purchaseList;
+		bool fastStop{ 0 };
     } misc;
 
     struct Reportbot {

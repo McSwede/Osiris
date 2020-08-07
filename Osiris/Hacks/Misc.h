@@ -49,4 +49,5 @@ namespace Misc
 	void drawAimbotFov() noexcept;
     void killSound(GameEvent& event) noexcept;
     void purchaseList(GameEvent* event = nullptr) noexcept;
+	void fastStop(UserCmd* cmd) noexcept;
 }

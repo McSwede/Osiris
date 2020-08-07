@@ -1562,6 +1562,7 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::Checkbox("Fake prime", &config->misc.fakePrime);
 	ImGui::Checkbox("Draw aimbot FOV", &config->misc.drawAimbotFov);
 	ImGui::Checkbox("Left Knife", &config->misc.leftKnife);
+	ImGui::Checkbox("Fast Stop", &config->misc.fastStop);
     ImGui::Checkbox("Purchase List", &config->misc.purchaseList.enabled);
     ImGui::SameLine();
 
