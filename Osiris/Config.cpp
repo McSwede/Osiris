@@ -565,6 +565,8 @@ static void from_json(const json& j, Config::Misc& m)
     read(j, "Fix tablet signal", m.fixTabletSignal);
     read(j, "Max angle delta", m.maxAngleDelta);
     read(j, "Fake prime", m.fakePrime);
+	read(j, "Draw aimbot FOV", m.drawAimbotFov);
+	read(j, "Left Knife", m.leftKnife);
     read(j, "Fix tablet signal", m.fixTabletSignal);
     read<value_t::object>(j, "Custom Hit Sound", m.customHitSound);
     read(j, "Kill sound", m.killSound);

@@ -84,11 +84,6 @@ public:
     {
         return getWeaponType() == WeaponType::SniperRifle;
     }
-
-	constexpr auto isKnife() noexcept
-	{
-		return getWeaponType() == WeaponType::Knife;
-	}
     
     constexpr auto isFullAuto() noexcept
     {

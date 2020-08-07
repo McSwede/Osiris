@@ -777,7 +777,7 @@ void Misc::knifeLeft() noexcept
 	auto weapon = localPlayer->getActiveWeapon();
 	if (!weapon) return;
 
-	left_knife->setValue(!weapon->isKnife());
+	left_knife->setValue(!is_knife(weapon->itemDefinitionIndex2()));
 }
 
 void Misc::drawAimbotFov() noexcept
