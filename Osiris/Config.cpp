@@ -623,7 +623,7 @@ static void from_json(const json& j, Config::Wpos& w)
     read(j, "wpos PurchaseList Lock", w.LockSelectedFlags[15]);
 }
 
-void Config::load(size_t id) noexcept
+void Config::load(size_t id, bool incremental) noexcept
 {
     json j;
 
