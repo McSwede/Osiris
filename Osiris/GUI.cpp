@@ -1643,7 +1643,7 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
 	if (!contentOnly) {
 		if (!window.config)
 			return;
-		ImGui::SetNextWindowSize({ 290.0f, 200.0f });
+		ImGui::SetNextWindowSize({ 290.0f, 0.0f });
         if (config->wpos.LockSelectedFlags[13] && config->style.menuStyle == 0) {
             ImGui::Begin("Config", &window.config, windowFlags | wposwindowFlags);
         } else {
@@ -1664,6 +1664,9 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
 
 	ImGui::Columns(2, nullptr, false);
 	ImGui::SetColumnOffset(1, 170.0f);
+
+    static bool incrementalLoad = false;
+    ImGui::Checkbox("Incremental Load", &incrementalLoad);
 
 	ImGui::PushItemWidth(160.0f);
 
@@ -1736,7 +1739,7 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
 				for (auto i = 0; i < IM_ARRAYSIZE(choices); i++)
 					if (ImGui::Selectable(choices[i]))
 						if (i == 0) {
-							config->load(currentConfig);
+							config->load(currentConfig, incrementalLoad);
 							updateColors();
 							SkinChanger::scheduleHudUpdate();
 							Misc::updateClanTag(true);
@@ -1783,7 +1786,7 @@ void GUI::renderGuiStyle2() noexcept
     if (config->wpos.LockSelectedFlags[14] && config->style.menuStyle == 0) {
         ImGui::Begin("Trigon", nullptr, windowFlags | ImGuiWindowFlags_NoTitleBar | wposwindowFlags);
     } else {
-        ImGui::Begin("Trigon", nullptr, windowFlags | ImGuiWindowFlags_NoTitleBar);
+        ImGui::Begin("Trigon", nullptr, windowFlags | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
     }
 
         if (!config->wpos.LockSelectedFlags[14]) {
