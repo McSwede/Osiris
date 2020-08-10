@@ -529,7 +529,7 @@ static void from_json(const json& j, Config::Misc& m)
     read(j, "Slowwalk key", m.slowwalkKey);
     read(j, "Sniper crosshair", m.sniperCrosshair);
     read<value_t::object>(j, "Noscope crosshair", m.noscopeCrosshair);
-    read(j, "Recoil crosshair", m.recoilCrosshair);
+    read<value_t::object>(j, "Recoil crosshair", m.recoilCrosshair);
     read(j, "Auto pistol", m.autoPistol);
     read(j, "Auto reload", m.autoReload);
     read(j, "Auto accept", m.autoAccept);

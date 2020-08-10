@@ -7,25 +7,34 @@
 
 enum class WeaponId : short;
 
+template <typename T>
+struct UtlMemory {
+	T& operator[](int i) noexcept { return memory[i]; };
+
+	T* memory;
+	int allocationCount;
+	int growSize;
+};
+
 template <typename Key, typename Value>
 struct Node {
-    int previousId;
-    int nextId;
-    void* _unknownPtr;
-    int _unknown;
+    int left;
+    int right;
+    int parent;
+    int type;
     Key key;
     Value value;
 };
 
 template <typename Key, typename Value>
-struct Head {
-    Node<Key, Value>* memory;
-    int allocationCount;
-    int growSize;
-    int startElement;
-    int nextAvailable;
-    int _unknown;
-    int lastElement;
+struct UtlMap {
+	void* lessFunc;
+	UtlMemory<Node<Key, Value>> memory;
+    int root;
+	int numElements;
+    int firstFree;
+    int lastAlloc;
+	Node<Key, Value>* elements;
 };
 
 struct String {
@@ -51,14 +60,14 @@ struct StickerKit {
 class EconItemDefintion {
 public:
     VIRTUAL_METHOD(WeaponId, getWeaponId, 0, (), (this))
+    VIRTUAL_METHOD(const char*, getItemBaseName, 2, (), (this))
 };
 
 class ItemSchema {
 public:
-    PAD(0x28C)
-    Head<int, PaintKit*> paintKits;
-    PAD(0x8)
-    Head<int, StickerKit*> stickerKits;
+    PAD(0x288)
+    UtlMap<int, PaintKit*> paintKits;
+    UtlMap<int, StickerKit*> stickerKits;
 
     VIRTUAL_METHOD(EconItemDefintion*, getItemDefinitionByName, 42, (const char* name), (this, name))
 };

@@ -229,7 +229,7 @@ public:
         int slowwalkKey{ 0 };
 		bool sniperCrosshair{ false };
         ColorToggleThickness noscopeCrosshair;
-        bool recoilCrosshair{ false };
+        ColorToggleThickness recoilCrosshair;
         bool autoPistol{ false };
         bool autoReload{ false };
         bool autoAccept{ false };
