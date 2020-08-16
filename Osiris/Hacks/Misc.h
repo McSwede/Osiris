@@ -45,9 +45,9 @@ namespace Misc
     void removeCrouchCooldown(UserCmd* cmd) noexcept;
     void moonwalk(UserCmd* cmd) noexcept;
     void playHitSound(GameEvent& event) noexcept;
-    void knifeLeft() noexcept;
 	void drawAimbotFov() noexcept;
     void killSound(GameEvent& event) noexcept;
     void purchaseList(GameEvent* event = nullptr) noexcept;
 	void fastStop(UserCmd* cmd) noexcept;
+    void oppositeHandKnife(FrameStage stage) noexcept;
 }

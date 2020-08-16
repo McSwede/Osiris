@@ -162,7 +162,6 @@ static bool __stdcall createMove(float inputSampleTime, UserCmd* cmd) noexcept
     memory->globalVars->serverTime(cmd);
     Misc::nadePredict();
     Misc::antiAfkKick(cmd);
-    Misc::fastPlant(cmd);
     Misc::prepareRevolver(cmd);
 	Misc::sniperCrosshair();
     Reportbot::run();
@@ -202,6 +201,7 @@ static bool __stdcall createMove(float inputSampleTime, UserCmd* cmd) noexcept
     Backtrack::run(cmd);
     Misc::edgejump(cmd);
     Misc::moonwalk(cmd);
+    Misc::fastPlant(cmd);
 
     if (!(cmd->buttons & (UserCmd::IN_ATTACK | UserCmd::IN_ATTACK2))) {
         Misc::chokePackets(sendPacket);
@@ -306,6 +306,7 @@ static void __stdcall frameStageNotify(FrameStage stage) noexcept
     if (interfaces->engine->isInGame()) {
         Visuals::skybox(stage);
         Visuals::removeBlur(stage);
+        Misc::oppositeHandKnife(stage);
         Visuals::removeGrass(stage);
         Visuals::modifySmoke(stage);
         Visuals::playerModel(stage);
