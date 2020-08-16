@@ -335,6 +335,7 @@ static void from_json(const json& j, Config::Backtrack& b)
     read(j, "Time limit", b.timeLimit);
     read(j, "Ping based", b.pingBased);
     read(j, "Fake Latency", b.fakeLatency);
+	read(j, "Draw all ticks", b.drawAllTicks);
 }
 
 static void from_json(const json& j, Config::AntiAim& a)
@@ -846,6 +847,7 @@ static void to_json(json& j, const Config::Backtrack& o, const Config::Backtrack
     WRITE("Time limit", timeLimit);
 	WRITE("Ping based", pingBased);
     WRITE("Fake Latency", fakeLatency);
+	WRITE("Draw all ticks", drawAllTicks);
 }
 static void to_json(json& j, const Config::AntiAim& o, const Config::AntiAim& dummy = {})
 {

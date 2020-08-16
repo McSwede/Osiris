@@ -89,6 +89,7 @@ public:
         int timeLimit{ 0 };
 		bool pingBased{ 0 };
         bool fakeLatency{ false };
+		bool drawAllTicks{ false };
     } backtrack;
 
     struct AntiAim {

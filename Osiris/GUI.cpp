@@ -492,6 +492,7 @@ void GUI::renderBacktrackWindow(bool contentOnly) noexcept
     ImGui::SameLine();
     ImGui::Checkbox("Recoil based fov", &config->backtrack.recoilBasedFov);
     ImGui::Checkbox("Ping based", &config->backtrack.pingBased);
+	ImGui::Checkbox("Draw all ticks", &config->backtrack.drawAllTicks);
     int TimeLimitRoof = 200; if (config->backtrack.fakeLatency) { TimeLimitRoof = 400; } else { TimeLimitRoof = 200; if (config->backtrack.timeLimit >= 201) { config->backtrack.timeLimit = 200; } }
     ImGui::PushItemWidth(220.0f); ImGui::PushID(0);
     ImGui::SliderInt("", &config->backtrack.timeLimit, 1, TimeLimitRoof, "Time Limit %d ms");
