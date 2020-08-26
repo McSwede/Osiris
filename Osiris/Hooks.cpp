@@ -27,7 +27,6 @@
 #include "Hacks/StreamProofESP.h"
 #include "Hacks/Glow.h"
 #include "Hacks/Misc.h"
-#include "Hacks/Reportbot.h"
 #include "Hacks/SkinChanger.h"
 #include "Hacks/Triggerbot.h"
 #include "Hacks/Visuals.h"
@@ -164,8 +163,7 @@ static bool __stdcall createMove(float inputSampleTime, UserCmd* cmd) noexcept
     Misc::antiAfkKick(cmd);
     Misc::prepareRevolver(cmd);
 	Misc::sniperCrosshair();
-    Reportbot::run();
-    Misc::bunnyHop(cmd);
+    Misc::runReportbot();
 	Misc::humanBunnyHop(cmd);
     Misc::autoStrafe(cmd);
     Misc::removeCrouchCooldown(cmd);

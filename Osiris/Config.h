@@ -272,19 +272,19 @@ public:
 		std::string customKillSound;
 		std::string customHitSound;
 		PurchaseList purchaseList;
-    } misc;
 
-    struct Reportbot {
-        bool enabled{ false };
-        bool textAbuse{ false };
-        bool griefing{ false };
-        bool wallhack{ true };
-        bool aimbot{ true };
-        bool other{ true };
-        int target{ 0 };
-        int delay{ 1 };
-        int rounds{ 1 };
-    } reportbot;
+        struct Reportbot {
+            bool enabled = false;
+            bool textAbuse = false;
+            bool griefing = false;
+            bool wallhack = true;
+            bool aimbot = true;
+            bool other = true;
+            int target = 0;
+            int delay = 1;
+            int rounds = 1;
+        } reportbot;
+    } misc;
 
     struct Wpos {
         float AimbotX{ 250.0f }; // wpos config .h //
