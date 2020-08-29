@@ -473,5 +473,11 @@
     <Filter Include="SDK">
       <UniqueIdentifier>{9cb69fb8-b331-4b7f-9a26-2fdaf1d9894b}</UniqueIdentifier>
     </Filter>
+    <ClInclude Include="nlohmann\json.hpp">
+      <Filter>nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\Panorama.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

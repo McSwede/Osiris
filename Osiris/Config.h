@@ -243,6 +243,7 @@ public:
 		bool quickReload{ false };
 		bool prepareRevolver{ false };
 		bool oppositeHandKnife{ false };
+        bool preserveKillfeed{ false };
 		bool fastStop{ false };
 		bool sniperCrosshair{ false };
 		bool bombDamage{ false };

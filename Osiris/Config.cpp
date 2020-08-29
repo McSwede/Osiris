@@ -585,6 +585,7 @@ static void from_json(const json& j, Config::Misc& m)
     read<value_t::object>(j, "Purchase List", m.purchaseList);
     read<value_t::object>(j, "Reportbot", m.reportbot);
     read(j, "Opposite Hand Knife", m.oppositeHandKnife);
+    read(j, "Preserve Killfeed", m.preserveKillfeed);
 }
 
 static void from_json(const json& j, Config::Misc::Reportbot& r)
@@ -1004,6 +1005,7 @@ static void to_json(json& j, const Config::Misc& o)
     WRITE("Purchase List", purchaseList);
     WRITE("Reportbot", reportbot);
     WRITE("Opposite Hand Knife", oppositeHandKnife);
+    WRITE("Preserve Killfeed", preserveKillfeed);
 }
 
 static void to_json(json& j, const Config::Visuals::ColorCorrection& o, const Config::Visuals::ColorCorrection& dummy)

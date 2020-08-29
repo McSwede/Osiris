@@ -1526,6 +1526,7 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
 	ImGui::Checkbox("Draw aimbot FOV", &config->misc.drawAimbotFov);
 	ImGui::Checkbox("Fast Stop", &config->misc.fastStop);
     ImGui::Checkbox("Opposite Hand Knife", &config->misc.oppositeHandKnife);
+    ImGui::Checkbox("Preserve Killfeed", &config->misc.preserveKillfeed);
     if (config->style.menuStyle != 1){
     ImGuiCustom::MultiCombo("Save and lock window position", config->wpos.LockFlags, config->wpos.LockSelectedFlags, 14);
     } else { ImGui::Checkbox("Save and lock window position", &config->wpos.LockSelectedFlags[14]); }

@@ -50,7 +50,7 @@ namespace Misc
     void purchaseList(GameEvent* event = nullptr) noexcept;
 	void fastStop(UserCmd* cmd) noexcept;
     void oppositeHandKnife(FrameStage stage) noexcept;
-
     void runReportbot() noexcept;
     void resetReportbot() noexcept;
+    void preserveKillfeed(bool roundStart = false) noexcept;
 }
