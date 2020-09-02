@@ -52,18 +52,11 @@ namespace Backtrack {
 
     extern std::deque<IncomingSequence>sequences;
 
-    constexpr auto getLerp() noexcept
-    {
-        auto ratio = std::clamp(cvars.interpRatio->getFloat(), cvars.minInterpRatio->getFloat(), cvars.maxInterpRatio->getFloat());
-
-        return max(cvars.interp->getFloat(), (ratio / ((cvars.maxUpdateRate) ? cvars.maxUpdateRate->getFloat() : cvars.updateRate->getFloat())));
-    }
+    float getLerp() noexcept;
 
     constexpr auto valid(float simtime) noexcept
     {
-        auto network = interfaces->engine->getNetworkChannel();
         if (!network)
-            return false;
 
         auto delta = std::clamp(network->getLatency(0) + network->getLatency(1) + getLerp(), 0.f, cvars.maxUnlag->getFloat()) - (memory->globalVars->serverTime() - simtime);
         return std::fabsf(delta) <= 0.2f;

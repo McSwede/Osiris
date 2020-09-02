@@ -130,3 +130,8 @@ struct PurchaseList {
     };
     int mode = Details;
 };
+
+struct PreserveKillfeed {
+    bool enabled = false;
+    bool onlyHeadshots = false;
+};

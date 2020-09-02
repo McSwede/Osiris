@@ -1180,7 +1180,7 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
         ImGui::PopID();
 
         if (ImGui::ListBoxHeader("Paint Kit")) {
-            const auto& kits = itemIndex == 1 ? SkinChanger::gloveKits : SkinChanger::skinKits;
+            const auto& kits = itemIndex == 1 ? SkinChanger::getGloveKits() : SkinChanger::getSkinKits();
 
             const std::locale original;
             std::locale::global(std::locale{ "en_US.utf8" });
@@ -1243,7 +1243,7 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
                 ImGui::PushID(i);
 
                 const auto kit_vector_index = config->skinChanger[itemIndex].stickers[i].kit_vector_index;
-                const std::string text = '#' + std::to_string(i + 1) + "  " + SkinChanger::stickerKits[kit_vector_index].name;
+                const std::string text = '#' + std::to_string(i + 1) + "  " + SkinChanger::getStickerKits()[kit_vector_index].name;
 
                 if (ImGui::Selectable(text.c_str(), i == selectedStickerSlot))
                     selectedStickerSlot = i;
@@ -1263,7 +1263,7 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
         ImGui::PopID();
 
         if (ImGui::ListBoxHeader("Sticker")) {
-            const auto& kits = SkinChanger::stickerKits;
+            const auto& kits = SkinChanger::getStickerKits();
 
             const std::locale original;
             std::locale::global(std::locale{ "en_US.utf8" });
@@ -1526,7 +1526,18 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
 	ImGui::Checkbox("Draw aimbot FOV", &config->misc.drawAimbotFov);
 	ImGui::Checkbox("Fast Stop", &config->misc.fastStop);
     ImGui::Checkbox("Opposite Hand Knife", &config->misc.oppositeHandKnife);
-    ImGui::Checkbox("Preserve Killfeed", &config->misc.preserveKillfeed);
+    ImGui::Checkbox("Preserve Killfeed", &config->misc.preserveKillfeed.enabled);
+    ImGui::SameLine();
+
+    ImGui::PushID("Preserve Killfeed");
+    if (ImGui::Button("..."))
+        ImGui::OpenPopup("");
+
+    if (ImGui::BeginPopup("")) {
+        ImGui::Checkbox("Only Headshots", &config->misc.preserveKillfeed.onlyHeadshots);
+        ImGui::EndPopup();
+    }
+    ImGui::PopID();
     if (config->style.menuStyle != 1){
     ImGuiCustom::MultiCombo("Save and lock window position", config->wpos.LockFlags, config->wpos.LockSelectedFlags, 14);
     } else { ImGui::Checkbox("Save and lock window position", &config->wpos.LockSelectedFlags[14]); }

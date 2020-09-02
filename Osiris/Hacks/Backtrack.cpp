@@ -169,6 +169,12 @@ void Backtrack::UpdateIncomingSequences(bool reset) noexcept
         sequences.pop_back();
 }
 
+float Backtrack::getLerp() noexcept
+{
+    auto ratio = std::clamp(cvars.interpRatio->getFloat(), cvars.minInterpRatio->getFloat(), cvars.maxInterpRatio->getFloat());
+    return max(cvars.interp->getFloat(), (ratio / ((cvars.maxUpdateRate) ? cvars.maxUpdateRate->getFloat() : cvars.updateRate->getFloat())));
+}
+
 int Backtrack::timeToTicks(float time) noexcept
 {
     return static_cast<int>(0.5f + time / memory->globalVars->intervalPerTick);
