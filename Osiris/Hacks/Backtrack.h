@@ -56,7 +56,9 @@ namespace Backtrack {
 
     constexpr auto valid(float simtime) noexcept
     {
-        if (!network)
+		auto network = interfaces->engine->getNetworkChannel();
+		if (!network)
+			return false;
 
         auto delta = std::clamp(network->getLatency(0) + network->getLatency(1) + getLerp(), 0.f, cvars.maxUnlag->getFloat()) - (memory->globalVars->serverTime() - simtime);
         return std::fabsf(delta) <= 0.2f;
