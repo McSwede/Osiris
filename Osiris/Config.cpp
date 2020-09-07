@@ -568,7 +568,6 @@ static void from_json(const json& j, Config::Misc& m)
     read(j, "Ban color", m.banColor);
     read<value_t::object>(j, "Ban text", m.banText);
     read(j, "Fast plant", m.fastPlant);
-    read(j, "Fast Stop", m.fastStop);
     read<value_t::object>(j, "Bomb timer", m.bombTimer);
     read(j, "Bomb Damage Indicator", m.bombDamage);
     
