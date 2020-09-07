@@ -20,6 +20,7 @@ namespace Misc
     void watermark() noexcept;
     void prepareRevolver(UserCmd*) noexcept;
     void fastPlant(UserCmd*) noexcept;
+    void fastStop(UserCmd*) noexcept;
     void drawBombTimer() noexcept;
 	void drawBombDamage() noexcept;
     void stealNames() noexcept;
