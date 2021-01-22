@@ -64,10 +64,10 @@ void Backtrack::run(UserCmd* cmd) noexcept
     if (!config->backtrack.enabled)
         return;
 
-    if (!(cmd->buttons & UserCmd::IN_ATTACK))
+    if (!localPlayer)
         return;
 
-    if (!localPlayer)
+    if (!(cmd->buttons & UserCmd::IN_ATTACK))
         return;
 
     auto localPlayerEyePosition = localPlayer->getEyePosition();

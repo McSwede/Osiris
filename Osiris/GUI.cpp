@@ -35,6 +35,10 @@ GUI::GUI() noexcept
     ImGui::StyleColorsDark();
     ImGuiStyle& style = ImGui::GetStyle();
 
+    style.WindowRounding = 0.0f;
+    style.GrabRounding = 0.0f;
+    style.FrameRounding = 0.0f;
+    style.PopupRounding = 0.0f;
     style.ScrollbarSize = 9.0f;
 
     ImGuiIO& io = ImGui::GetIO();
@@ -288,12 +292,17 @@ void GUI::renderAimbotWindow(bool contentOnly) noexcept
     ImGui::PushItemWidth(240.0f);
     ImGui::SliderFloat("Fov", &config->aimbot[currentWeapon].fov, 0.0f, 255.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
     ImGui::SliderFloat("Smooth", &config->aimbot[currentWeapon].smooth, 1.0f, 100.0f, "%.2f");
+    ImGui::SliderFloat("Recoil control x", &config->aimbot[currentWeapon].recoilControlX, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+    ImGui::SliderFloat("Recoil control y", &config->aimbot[currentWeapon].recoilControlY, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
     ImGui::SliderFloat("Max aim inaccuracy", &config->aimbot[currentWeapon].maxAimInaccuracy, 0.0f, 1.0f, "%.5f", ImGuiSliderFlags_Logarithmic);
     ImGui::SliderFloat("Max shot inaccuracy", &config->aimbot[currentWeapon].maxShotInaccuracy, 0.0f, 1.0f, "%.5f", ImGuiSliderFlags_Logarithmic);
     ImGui::InputInt("Min damage", &config->aimbot[currentWeapon].minDamage);
     config->aimbot[currentWeapon].minDamage = std::clamp(config->aimbot[currentWeapon].minDamage, 0, 250);
     ImGui::Checkbox("Killshot", &config->aimbot[currentWeapon].killshot);
     ImGui::Checkbox("Between shots", &config->aimbot[currentWeapon].betweenShots);
+    ImGui::Checkbox("Standalone RCS", &config->aimbot[currentWeapon].standaloneRecoilControl);
+    ImGui::InputInt("Ignore Shots", &config->aimbot[currentWeapon].shotsFired);
+    config->aimbot[currentWeapon].shotsFired = std::clamp(config->aimbot[currentWeapon].shotsFired, 0, 10);
     ImGui::Columns(1);
     if (!contentOnly)
         ImGui::End();
@@ -432,6 +441,8 @@ void GUI::renderTriggerbotWindow(bool contentOnly) noexcept
     config->triggerbot[currentWeapon].minDamage = std::clamp(config->triggerbot[currentWeapon].minDamage, 0, 250);
     ImGui::Checkbox("Killshot", &config->triggerbot[currentWeapon].killshot);
     ImGui::SliderFloat("Burst Time", &config->triggerbot[currentWeapon].burstTime, 0.0f, 0.5f, "%.3f s");
+    ImGui::SliderFloat("Max aim inaccuracy", &config->triggerbot[currentWeapon].maxAimInaccuracy, 0.0f, 1.0f, "%.5f", 2.0f);
+    ImGui::SliderFloat("Max shot inaccuracy", &config->triggerbot[currentWeapon].maxShotInaccuracy, 0.0f, 1.0f, "%.5f", 2.0f);
 
     if (!contentOnly)
         ImGui::End();
@@ -446,11 +457,17 @@ void GUI::renderBacktrackWindow(bool contentOnly) noexcept
         ImGui::Begin("Backtrack", &window.backtrack, windowFlags);
     }
     ImGui::Checkbox("Enabled", &config->backtrack.enabled);
+    ImGui::SameLine();
+    ImGui::Checkbox("Extend with fake ping", &config->backtrack.fakeLatency);
     ImGui::Checkbox("Ignore smoke", &config->backtrack.ignoreSmoke);
+    ImGui::SameLine();
     ImGui::Checkbox("Recoil based fov", &config->backtrack.recoilBasedFov);
-    ImGui::PushItemWidth(220.0f);
-    ImGui::SliderInt("Time limit", &config->backtrack.timeLimit, 1, 200, "%d ms");
-    ImGui::PopItemWidth();
+    ImGui::Checkbox("Ping based", &config->backtrack.pingBased);
+    ImGui::Checkbox("Draw all ticks", &config->backtrack.drawAllTicks);
+    int TimeLimitRoof = 200; if (config->backtrack.fakeLatency) { TimeLimitRoof = 400; }
+    else { TimeLimitRoof = 200; if (config->backtrack.timeLimit >= 201) { config->backtrack.timeLimit = 200; } }
+    ImGui::PushItemWidth(220.0f); ImGui::PushID(0);
+    ImGui::SliderInt("", &config->backtrack.timeLimit, 1, TimeLimitRoof, "Time Limit %d ms");
     if (!contentOnly)
         ImGui::End();
 }
@@ -1256,6 +1273,13 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::Checkbox("Anti AFK kick", &config->misc.antiAfkKick);
     ImGui::Checkbox("Auto strafe", &config->misc.autoStrafe);
     ImGui::Checkbox("Bunny hop", &config->misc.bunnyHop);
+    ImGui::Checkbox("Human Bunny hop", &config->misc.humanBunnyHop);
+    ImGui::SetNextItemWidth(100.0f);
+    ImGui::SliderInt("Bhop Hit Chance", &config->misc.bhop_hit_chance, 0, 100, "%d%");
+    ImGui::SetNextItemWidth(100.0f);
+    ImGui::InputInt("Bhop Restricted Limit", &config->misc.hops_restricted_limit);
+    ImGui::SetNextItemWidth(100.0f);
+    ImGui::InputInt("Max Hops Hit", &config->misc.max_hops_hit);
     ImGui::Checkbox("Fast duck", &config->misc.fastDuck);
     ImGui::Checkbox("Moonwalk", &config->misc.moonwalk);
     ImGui::Checkbox("Edge Jump", &config->misc.edgejump);
@@ -1268,6 +1292,7 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::PushID("Slowwalk Key");
     hotkey2("", config->misc.slowwalkKey);
     ImGui::PopID();
+    ImGui::Checkbox("Sniper crosshair", &config->misc.sniperCrosshair);
     ImGuiCustom::colorPicker("Noscope crosshair", config->misc.noscopeCrosshair);
     ImGuiCustom::colorPicker("Recoil crosshair", config->misc.recoilCrosshair);
     ImGui::Checkbox("Auto pistol", &config->misc.autoPistol);
@@ -1318,6 +1343,7 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::Checkbox("Fast plant", &config->misc.fastPlant);
     ImGui::Checkbox("Fast Stop", &config->misc.fastStop);
     ImGuiCustom::colorPicker("Bomb timer", config->misc.bombTimer);
+    ImGui::Checkbox("Bomb Damage Indicator", &config->misc.bombDamage);
     ImGui::Checkbox("Quick reload", &config->misc.quickReload);
     ImGui::Checkbox("Prepare revolver", &config->misc.prepareRevolver);
     ImGui::SameLine();
@@ -1508,21 +1534,48 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
             ImGui::EndPopup();
         }
         if (currentConfig != -1) {
-            if (ImGui::Button("Load selected", { 100.0f, 25.0f })) {
-                config->load(currentConfig, incrementalLoad);
-                updateColors();
-                SkinChanger::scheduleHudUpdate();
-                Misc::updateClanTag(true);
+            if (ImGui::Button("Load selected", { 100.0f, 25.0f }))
+                ImGui::OpenPopup("Config to load");
+            if (ImGui::BeginPopup("Config to load")) {
+                static constexpr const char* choices[]{ "Confirm", "Cancel" };
+
+                for (auto i = 0; i < IM_ARRAYSIZE(choices); i++)
+                    if (ImGui::Selectable(choices[i]))
+                        if (i == 0) {
+                            config->load(currentConfig, incrementalLoad);
+                            updateColors();
+                            SkinChanger::scheduleHudUpdate();
+                            Misc::updateClanTag(true);
+                        }
+
+                ImGui::EndPopup();
             }
             if (ImGui::Button("Save selected", { 100.0f, 25.0f }))
-                config->save(currentConfig);
-            if (ImGui::Button("Delete selected", { 100.0f, 25.0f })) {
-                config->remove(currentConfig);
+                ImGui::OpenPopup("Config to save");
+            if (ImGui::BeginPopup("Config to save")) {
+                static constexpr const char* choices[]{ "Confirm", "Cancel" };
 
-                if (static_cast<std::size_t>(currentConfig) < configItems.size())
-                    buffer = configItems[currentConfig];
-                else
-                    buffer.clear();
+                for (auto i = 0; i < IM_ARRAYSIZE(choices); i++)
+                    if (ImGui::Selectable(choices[i]))
+                        if (i == 0) config->save(currentConfig);
+
+                ImGui::EndPopup();
+            }
+            if (ImGui::Button("Delete selected", { 100.0f, 25.0f }))
+                ImGui::OpenPopup("Config to delete");
+            if (ImGui::BeginPopup("Config to delete")) {
+                static constexpr const char* choices[]{ "Confirm", "Cancel" };
+
+                for (auto i = 0; i < IM_ARRAYSIZE(choices); i++)
+                    if (ImGui::Selectable(choices[i]))
+                        if (i == 0) {
+                            config->remove(currentConfig);
+                            if (static_cast<std::size_t>(currentConfig) < configItems.size())
+                                buffer = configItems[currentConfig];
+                            else
+                                buffer.clear();
+                        };
+                ImGui::EndPopup();
             }
         }
         ImGui::Columns(1);
@@ -1532,7 +1585,7 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
 
 void GUI::renderGuiStyle2() noexcept
 {
-    ImGui::Begin("Osiris", nullptr, windowFlags | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("Trigon", nullptr, windowFlags | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
 
     if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyScroll | ImGuiTabBarFlags_NoTooltip)) {
         if (ImGui::BeginTabItem("Aimbot")) {

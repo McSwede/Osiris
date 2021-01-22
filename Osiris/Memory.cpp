@@ -124,7 +124,7 @@ static std::uintptr_t findPattern(const char* moduleName, std::string_view patte
         }
     }
 #ifdef _WIN32
-    MessageBoxA(NULL, ("Failed to find pattern #" + std::to_string(id) + '!').c_str(), "Osiris", MB_OK | MB_ICONWARNING);
+    MessageBoxA(NULL, ("Failed to find pattern #" + std::to_string(id) + '!').c_str(), "Trigon", MB_OK | MB_ICONWARNING);
 #endif
     return 0;
 }

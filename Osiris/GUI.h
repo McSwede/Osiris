@@ -12,7 +12,7 @@ public:
     void handleToggle() noexcept;
     bool isOpen() noexcept { return open; }
 private:
-    bool open = true;
+    bool open = false;
 
     void updateColors() const noexcept;
     void renderMenuBar() noexcept;

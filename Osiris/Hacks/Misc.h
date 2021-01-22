@@ -12,6 +12,7 @@ namespace Misc
     void inverseRagdollGravity() noexcept;
     void updateClanTag(bool = false) noexcept;
     void spectatorList() noexcept;
+    void sniperCrosshair() noexcept;
     void noscopeCrosshair(ImDrawList* drawlist) noexcept;
     void recoilCrosshair(ImDrawList* drawList) noexcept;
     void watermark() noexcept;
@@ -19,11 +20,13 @@ namespace Misc
     void fastPlant(UserCmd*) noexcept;
     void fastStop(UserCmd*) noexcept;
     void drawBombTimer() noexcept;
+    void drawBombDamage() noexcept;
     void stealNames() noexcept;
     void disablePanoramablur() noexcept;
     void quickReload(UserCmd*) noexcept;
     bool changeName(bool, const char*, float) noexcept;
     void bunnyHop(UserCmd*) noexcept;
+    void humanBunnyHop(UserCmd*) noexcept;
     void fakeBan(bool = false) noexcept;
     void nadePredict() noexcept;
     void fixTabletSignal() noexcept;

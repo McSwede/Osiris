@@ -51,6 +51,9 @@ void Misc::edgejump(UserCmd* cmd) noexcept
 
     if ((EnginePrediction::getFlags() & 1) && !(localPlayer->flags() & 1))
         cmd->buttons |= UserCmd::IN_JUMP;
+
+    if (!(localPlayer->flags() & 1))
+        cmd->buttons |= UserCmd::IN_DUCK;
 }
 
 static bool slowwalkActive;
@@ -168,6 +171,12 @@ void Misc::spectatorList() noexcept
     }
 }
 
+void Misc::sniperCrosshair() noexcept
+{
+    static auto showSpread = interfaces->cvar->findVar("weapon_debug_spread_show");
+    showSpread->setValue(config->misc.sniperCrosshair && localPlayer && !localPlayer->isScoped() ? 3 : 0);
+}
+
 static void drawCrosshair(ImDrawList* drawList, const ImVec2& pos, ImU32 color, float thickness) noexcept
 {
     drawList->Flags &= ~ImDrawListFlags_AntiAliasedLines;
@@ -252,9 +261,6 @@ void Misc::watermark() noexcept
             interfaces->surface->setTextColor(rainbowColor(config->misc.watermark.rainbowSpeed));
         else
             interfaces->surface->setTextColor(config->misc.watermark.color);
-
-        interfaces->surface->setTextPosition(5, 0);
-        interfaces->surface->printText(L"Osiris");
 
         static auto frameRate = 1.0f;
         frameRate = 0.9f * frameRate + 0.1f * memory->globalVars->absoluteFrameTime;
@@ -415,6 +421,65 @@ void Misc::drawBombTimer() noexcept
     ImGui::End();
 }
 
+void Misc::drawBombDamage() noexcept
+{
+    if (!config->misc.bombDamage) return;
+
+    //No Alive return since it is useful if you want to call it out to a mate that he will die
+    if (!localPlayer) return;
+
+    for (int i = interfaces->engine->getMaxClients(); i <= interfaces->entityList->getHighestEntityIndex(); i++)
+    {
+        auto entity = interfaces->entityList->getEntity(i);
+        if (const auto bomb = (*memory->plantedC4s)[0]; bomb && bomb->c4Ticking())
+        {
+            auto vecBombDistance = entity->origin() - localPlayer->origin();
+
+            const auto d = (vecBombDistance.length() - 75.68f) / 789.2f;
+            auto flDamage = 450.7f * exp(-d * d);
+
+            const float ArmorValue = localPlayer->armor();
+            if (ArmorValue > 0)
+            {
+                auto flNew = flDamage * 0.5f;
+                auto flArmor = (flDamage - flNew) * 0.5f;
+
+                if (flArmor > ArmorValue)
+                {
+                    flArmor = ArmorValue * 2.f;
+                    flNew = flDamage - flArmor;
+                }
+
+                flDamage = flNew;
+            }
+
+            const int bombDamage = max(ceilf(flDamage), 0);
+
+            //Could get the specator target here as well and set the color based on the spaceted player
+            //I'm too lazy for that tho, green while you are dead just looks nicer
+            if (localPlayer->isAlive() && bombDamage >= localPlayer->health())
+                interfaces->surface->setTextColor(255, 0, 0);
+            else
+                interfaces->surface->setTextColor(0, 255, 0);
+
+            auto bombDmgText{ (std::wstringstream{} << L"Bomb Damage: " << bombDamage).str() };
+
+            constexpr unsigned font{ 0xc1 };
+            interfaces->surface->setTextFont(font);
+
+            auto drawPositionY{ interfaces->surface->getScreenSize().second / 8 };
+            const auto bombDmgX{
+                interfaces->surface->getScreenSize().first / 2 - static_cast<int>((interfaces->surface->getTextSize(font, bombDmgText.c_str())).first / 2)
+            };
+
+            drawPositionY -= interfaces->surface->getTextSize(font, bombDmgText.c_str()).second;
+
+            interfaces->surface->setTextPosition(bombDmgX, drawPositionY);
+            interfaces->surface->printText(bombDmgText.c_str());
+        }
+    }
+}
+
 void Misc::stealNames() noexcept
 {
     if (!config->misc.nameStealer)
@@ -529,6 +594,33 @@ void Misc::bunnyHop(UserCmd* cmd) noexcept
         cmd->buttons &= ~UserCmd::IN_JUMP;
 
     wasLastTimeOnGround = localPlayer->flags() & 1;
+}
+
+void Misc::humanBunnyHop(UserCmd* cmd) noexcept
+{
+    static int hops_restricted = 0;
+    static int hops_hit = 0;
+
+    if (config->misc.humanBunnyHop
+
+        && localPlayer->moveType() != MoveType::LADDER) {
+        if (cmd->buttons & UserCmd::IN_JUMP && !(localPlayer->flags() & 1)) {
+            cmd->buttons &= ~UserCmd::IN_JUMP;
+            hops_restricted = 0;
+        }
+        else if ((rand() % 100 > config->misc.bhop_hit_chance			//chance of hitting first hop is always the same, the 2nd part is that so it always doesn't rape your speed
+            && hops_restricted < config->misc.hops_restricted_limit)	//the same amount, it can be made a constant if you want to or can be removed, up to you
+            || (config->misc.max_hops_hit > 0							//force fuck up after certain amount of hops to look more legit, you could add variance to this and
+                && hops_hit > config->misc.max_hops_hit))				//everything but fuck off that's too much customisation in my opinion, i only added this one because prof told me to
+        {
+            cmd->buttons &= ~UserCmd::IN_JUMP;
+            hops_restricted++;
+            hops_hit = 0;
+        }
+        else
+            hops_hit++;
+    }
+
 }
 
 void Misc::fakeBan(bool set) noexcept

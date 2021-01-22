@@ -234,6 +234,10 @@ static void from_json(const json& j, Config::Aimbot& a)
     read(j, "Min damage", a.minDamage);
     read(j, "Killshot", a.killshot);
     read(j, "Between shots", a.betweenShots);
+    read(j, "Recoil control X", a.recoilControlX);
+    read(j, "Recoil control Y", a.recoilControlY);
+    read(j, "Standalone RCS", a.standaloneRecoilControl);
+    read(j, "Standalone RCS Ignore Shots", a.shotsFired);
 }
 
 static void from_json(const json& j, Config::Triggerbot& t)
@@ -248,6 +252,8 @@ static void from_json(const json& j, Config::Triggerbot& t)
     read(j, "Min damage", t.minDamage);
     read(j, "Killshot", t.killshot);
     read(j, "Burst Time", t.burstTime);
+    read(j, "Max aim inaccuracy", t.maxAimInaccuracy);
+    read(j, "Max shot inaccuracy", t.maxShotInaccuracy);
 }
 
 static void from_json(const json& j, Config::Backtrack& b)
@@ -256,6 +262,9 @@ static void from_json(const json& j, Config::Backtrack& b)
     read(j, "Ignore smoke", b.ignoreSmoke);
     read(j, "Recoil based fov", b.recoilBasedFov);
     read(j, "Time limit", b.timeLimit);
+    read(j, "Ping based", b.pingBased);
+    read(j, "Fake Latency", b.fakeLatency);
+    read(j, "Draw all ticks", b.drawAllTicks);
 }
 
 static void from_json(const json& j, Config::AntiAim& a)
@@ -434,6 +443,10 @@ static void from_json(const json& j, Config::Misc& m)
     read(j, "Anti AFK kick", m.antiAfkKick);
     read(j, "Auto strafe", m.autoStrafe);
     read(j, "Bunny hop", m.bunnyHop);
+    read(j, "Human Bunny hop", m.humanBunnyHop);
+    read(j, "Bhop Hit Chance", m.bhop_hit_chance);
+    read(j, "Bhop Restricted Limit", m.hops_restricted_limit);
+    read(j, "Max Hops Hit", m.max_hops_hit);
     read(j, "Custom clan tag", m.customClanTag);
     read(j, "Clock tag", m.clocktag);
     read(j, "Clan tag", m.clanTag, sizeof(m.clanTag));
@@ -444,6 +457,7 @@ static void from_json(const json& j, Config::Misc& m)
     read(j, "Edge Jump Key", m.edgejumpkey);
     read(j, "Slowwalk", m.slowwalk);
     read(j, "Slowwalk key", m.slowwalkKey);
+    read(j, "Sniper crosshair", m.sniperCrosshair);
     read<value_t::object>(j, "Noscope crosshair", m.noscopeCrosshair);
     read<value_t::object>(j, "Recoil crosshair", m.recoilCrosshair);
     read(j, "Auto pistol", m.autoPistol);
@@ -470,6 +484,7 @@ static void from_json(const json& j, Config::Misc& m)
     read(j, "Fast plant", m.fastPlant);
     read(j, "Fast Stop", m.fastStop);
     read<value_t::object>(j, "Bomb timer", m.bombTimer);
+    read(j, "Bomb Damage Indicator", m.bombDamage);
     read(j, "Quick reload", m.quickReload);
     read(j, "Prepare revolver", m.prepareRevolver);
     read(j, "Prepare revolver key", m.prepareRevolverKey);
@@ -688,6 +703,10 @@ static void to_json(json& j, const Config::Aimbot& o, const Config::Aimbot& dumm
     WRITE("Min damage", minDamage);
     WRITE("Killshot", killshot);
     WRITE("Between shots", betweenShots);
+    WRITE("Recoil control X", recoilControlX);
+    WRITE("Recoil control Y", recoilControlY);
+    WRITE("Standalone RCS", standaloneRecoilControl);
+    WRITE("Standalone RCS Ignore Shots", shotsFired);
 }
 
 static void to_json(json& j, const Config::Triggerbot& o, const Config::Triggerbot& dummy = {})
@@ -702,6 +721,8 @@ static void to_json(json& j, const Config::Triggerbot& o, const Config::Triggerb
     WRITE("Min damage", minDamage);
     WRITE("Killshot", killshot);
     WRITE("Burst Time", burstTime);
+    WRITE("Max aim inaccuracy", maxAimInaccuracy);
+    WRITE("Max shot inaccuracy", maxShotInaccuracy);
 }
 
 static void to_json(json& j, const Config::Backtrack& o, const Config::Backtrack& dummy = {})
@@ -710,6 +731,9 @@ static void to_json(json& j, const Config::Backtrack& o, const Config::Backtrack
     WRITE("Ignore smoke", ignoreSmoke);
     WRITE("Recoil based fov", recoilBasedFov);
     WRITE("Time limit", timeLimit);
+    WRITE("Ping based", pingBased);
+    WRITE("Fake Latency", fakeLatency);
+    WRITE("Draw all ticks", drawAllTicks);
 }
 
 static void to_json(json& j, const Config::AntiAim& o, const Config::AntiAim& dummy = {})
@@ -817,6 +841,10 @@ static void to_json(json& j, const Config::Misc& o)
     WRITE("Anti AFK kick", antiAfkKick);
     WRITE("Auto strafe", autoStrafe);
     WRITE("Bunny hop", bunnyHop);
+    WRITE("Human Bunny hop", humanBunnyHop);
+    WRITE("Bhop Hit Chance", bhop_hit_chance);
+    WRITE("Bhop Restricted Limit", hops_restricted_limit);
+    WRITE("Max Hops Hit", max_hops_hit);
     WRITE("Custom clan tag", customClanTag);
     WRITE("Clock tag", clocktag);
 
@@ -830,6 +858,7 @@ static void to_json(json& j, const Config::Misc& o)
     WRITE("Edge Jump Key", edgejumpkey);
     WRITE("Slowwalk", slowwalk);
     WRITE("Slowwalk key", slowwalkKey);
+    WRITE("Sniper crosshair", sniperCrosshair);
     WRITE("Noscope crosshair", noscopeCrosshair);
     WRITE("Recoil crosshair", recoilCrosshair);
     WRITE("Auto pistol", autoPistol);
@@ -856,6 +885,7 @@ static void to_json(json& j, const Config::Misc& o)
     WRITE("Fast plant", fastPlant);
     WRITE("Fast Stop", fastStop);
     WRITE("Bomb timer", bombTimer);
+    WRITE("Bomb Damage Indicator", bombDamage);
     WRITE("Quick reload", quickReload);
     WRITE("Prepare revolver", prepareRevolver);
     WRITE("Prepare revolver key", prepareRevolverKey);

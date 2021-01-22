@@ -30,6 +30,7 @@
 #include "Hooks.h"
 #include "Interfaces.h"
 #include "Memory.h"
+#include "AntiDetection.h"
 
 #include "Hacks/Aimbot.h"
 #include "Hacks/AntiAim.h"
@@ -72,10 +73,12 @@ static LRESULT __stdcall wndProc(HWND window, UINT msg, WPARAM wParam, LPARAM lP
 
         ImGui::CreateContext();
         ImGui_ImplWin32_Init(window);
-        config = std::make_unique<Config>("Osiris");
+        config = std::make_unique<Config>("Trigon");
         gui = std::make_unique<GUI>();
 
         hooks->install();
+
+        antiDetection = std::make_unique<AntiDetection>();
 
         return true;
     }(window);
@@ -175,6 +178,8 @@ static bool __STDCALL createMove(LINUX_ARGS(void* thisptr,) float inputSampleTim
     Misc::quickReload(cmd);
     Misc::fixTabletSignal();
     Misc::slowwalk(cmd);
+    Misc::sniperCrosshair();
+    Misc::humanBunnyHop(cmd);
 
 #ifdef _WIN32
     EnginePrediction::run(cmd);
@@ -685,6 +690,7 @@ void Hooks::uninstall() noexcept
     surface.restore();
     svCheats.restore();
     viewRender.restore();
+    networkChannel.restore();
 
     netvars->restore();
 
@@ -717,7 +723,7 @@ static int pollEvent(SDL_Event* event) noexcept
         eventListener = std::make_unique<EventListener>();
 
         ImGui::CreateContext();
-        config = std::make_unique<Config>("Osiris");
+        config = std::make_unique<Config>("Trigon");
 
         gui = std::make_unique<GUI>();
 

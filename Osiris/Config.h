@@ -49,6 +49,10 @@ public:
         int minDamage{ 1 };
         bool killshot{ false };
         bool betweenShots{ true };
+        int shotsFired{ 1 };
+        bool standaloneRecoilControl{ false };
+        float recoilControlX{ 0.0f };
+        float recoilControlY{ 0.0f };
     };
     std::array<Aimbot, 40> aimbot;
     bool aimbotOnKey{ false };
@@ -66,6 +70,8 @@ public:
         int shotDelay = 0;
         int minDamage = 1;
         float burstTime = 0.0f;
+        float maxAimInaccuracy{ 1.0f };
+        float maxShotInaccuracy{ 1.0f };
     };
     std::array<Triggerbot, 40> triggerbot;
     KeyBind triggerbotHoldKey = KeyBind::NONE;
@@ -74,7 +80,10 @@ public:
         bool enabled{ false };
         bool ignoreSmoke{ false };
         bool recoilBasedFov{ false };
-        int timeLimit{ 200 };
+        int timeLimit{ 0 };
+        bool pingBased{ false };
+        bool fakeLatency{ false };
+        bool drawAllTicks{ false };
     } backtrack;
 
     struct AntiAim {
@@ -195,6 +204,10 @@ public:
         bool antiAfkKick{ false };
         bool autoStrafe{ false };
         bool bunnyHop{ false };
+        bool humanBunnyHop{ false };
+        int bhop_hit_chance{ 100 };
+        int hops_restricted_limit{ 1 };
+        int max_hops_hit{ 5 };
         bool customClanTag{ false };
         bool clocktag{ false };
         bool animatedClanTag{ false };
@@ -228,6 +241,7 @@ public:
         char clanTag[16];
         KeyBind edgejumpkey = KeyBind::NONE;
         KeyBind slowwalkKey = KeyBind::NONE;
+        bool sniperCrosshair{ false };
         ColorToggleThickness noscopeCrosshair;
         ColorToggleThickness recoilCrosshair;
         ColorToggle3 spectatorList;
@@ -237,6 +251,7 @@ public:
         int banColor{ 6 };
         std::string banText{ "Cheater has been permanently banned from official CS:GO servers." };
         ColorToggle3 bombTimer{ 1.0f, 0.55f, 0.0f };
+        bool bombDamage{ false };
         KeyBind prepareRevolverKey = KeyBind::NONE;
         int hitSound{ 0 };
         int chokedPackets{ 0 };
