@@ -1,10 +1,16 @@
+﻿#include <array>
+#include <cwctype>
 #include <fstream>
 #include <functional>
 #include <string>
+
+#ifdef _WIN32
 #include <ShlObj.h>
 #include <Windows.h>
+#endif
 
 #include "imgui/imgui.h"
+#include "imgui/imgui_internal.h"
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_stdlib.h"
 
@@ -18,26 +24,25 @@
 #include "Hooks.h"
 #include "Interfaces.h"
 #include "SDK/InputSystem.h"
+#include "Hacks/Visuals.h"
+#include "Hacks/Glow.h"
 
-constexpr auto windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-constexpr auto wposwindowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
+constexpr auto windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize
+| ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 
 GUI::GUI() noexcept
 {
     ImGui::StyleColorsDark();
     ImGuiStyle& style = ImGui::GetStyle();
 
-	style.WindowRounding = 0.0f;
-	style.GrabRounding = 0.0f;
-	style.FrameRounding = 0.0f;
-	style.PopupRounding = 0.0f;
-	style.ScrollbarSize = 9.0f;
+    style.ScrollbarSize = 9.0f;
 
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = nullptr;
     io.LogFilename = nullptr;
     io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 
+#ifdef _WIN32
     if (PWSTR pathToFonts; SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Fonts, 0, nullptr, &pathToFonts))) {
         const std::filesystem::path path{ pathToFonts };
         CoTaskMemFree(pathToFonts);
@@ -46,8 +51,18 @@ GUI::GUI() noexcept
         cfg.OversampleV = 3;
 
         fonts.tahoma = io.Fonts->AddFontFromFileTTF((path / "tahoma.ttf").string().c_str(), 15.0f, &cfg, Helpers::getFontGlyphRanges());
+
+        cfg.MergeMode = true;
+        static constexpr ImWchar symbol[]{
+            0x2605, 0x2605, // ★
+            0
+        };
+        io.Fonts->AddFontFromFileTTF((path / "seguisym.ttf").string().c_str(), 15.0f, &cfg, symbol);
+        cfg.MergeMode = false;
+
         fonts.segoeui = io.Fonts->AddFontFromFileTTF((path / "segoeui.ttf").string().c_str(), 15.0f, &cfg, Helpers::getFontGlyphRanges());
     }
+#endif
 }
 
 void GUI::render() noexcept
@@ -58,7 +73,7 @@ void GUI::render() noexcept
         renderAntiAimWindow();
         renderTriggerbotWindow();
         renderBacktrackWindow();
-        renderGlowWindow();
+        Glow::drawGUI(false);
         renderChamsWindow();
         renderStreamProofESPWindow();
         renderVisualsWindow();
@@ -81,22 +96,41 @@ void GUI::updateColors() const noexcept
     }
 }
 
-void GUI::hotkey(int& key) noexcept
+#include "InputUtil.h"
+
+static void hotkey2(const char* label, KeyBind& key, float samelineOffset = 0.0f, const ImVec2& size = { 100.0f, 0.0f }) noexcept
 {
-    key ? ImGui::Text("[ %s ]", interfaces->inputSystem->virtualKeyToString(key)) : ImGui::TextUnformatted("[ key ]");
+    const auto id = ImGui::GetID(label);
+    ImGui::PushID(label);
 
-    if (!ImGui::IsItemHovered())
-        return;
+    ImGui::TextUnformatted(label);
+    ImGui::SameLine(samelineOffset);
 
-    ImGui::SetTooltip("Press any key to change keybind");
-    ImGuiIO& io = ImGui::GetIO();
-    for (int i = 0; i < IM_ARRAYSIZE(io.KeysDown); i++)
-        if (ImGui::IsKeyPressed(i) && i != config->misc.menuKey)
-            key = i != VK_ESCAPE ? i : 0;
+    if (ImGui::GetActiveID() == id) {
+        ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetColorU32(ImGuiCol_ButtonActive));
+        ImGui::Button("...", size);
+        ImGui::PopStyleColor();
 
-    for (int i = 0; i < IM_ARRAYSIZE(io.MouseDown); i++)
-        if (ImGui::IsMouseDown(i) && i + (i > 1 ? 2 : 1) != config->misc.menuKey)
-            key = i + (i > 1 ? 2 : 1);
+        ImGui::GetCurrentContext()->ActiveIdAllowOverlap = true;
+        if ((!ImGui::IsItemHovered() && ImGui::GetIO().MouseClicked[0]) || key.setToPressedKey())
+            ImGui::ClearActiveID();
+    } else if (ImGui::Button(key.toString(), size)) {
+        ImGui::SetActiveID(id, ImGui::GetCurrentWindow());
+    }
+
+    ImGui::PopID();
+}
+
+void GUI::handleToggle() noexcept
+{
+    if (config->misc.menuKey.isPressed()) {
+        open = !open;
+        if (!open)
+            interfaces->inputSystem->resetInputState();
+#ifndef _WIN32
+        ImGui::GetIO().MouseDrawCursor = gui->open;
+#endif
+    }
 }
 
 static void menuBarItem(const char* name, bool& enabled) noexcept
@@ -115,7 +149,7 @@ void GUI::renderMenuBar() noexcept
         menuBarItem("Anti aim", window.antiAim);
         menuBarItem("Triggerbot", window.triggerbot);
         menuBarItem("Backtrack", window.backtrack);
-        menuBarItem("Glow", window.glow);
+        Glow::menuBarItem();
         menuBarItem("Chams", window.chams);
         menuBarItem("ESP", window.streamProofESP);
         menuBarItem("Visuals", window.visuals);
@@ -134,24 +168,20 @@ void GUI::renderAimbotWindow(bool contentOnly) noexcept
         if (!window.aimbot)
             return;
         ImGui::SetNextWindowSize({ 600.0f, 0.0f });
-        if (config->wpos.LockSelectedFlags[0] && config->style.menuStyle == 0) {
-            ImGui::Begin("Aimbot", &window.aimbot, windowFlags | wposwindowFlags);
-        } else {
-            ImGui::Begin("Aimbot", &window.aimbot, windowFlags);
-        }
+        ImGui::Begin("Aimbot", &window.aimbot, windowFlags);
     }
-
-    if (config->style.menuStyle == 0) {
-        if (!config->wpos.LockSelectedFlags[0]) {
-            if (config->wpos.AimbotX != ImGui::GetWindowPos().x) { config->wpos.AimbotX = ImGui::GetWindowPos().x; }
-            if (config->wpos.AimbotY != ImGui::GetWindowPos().y) { config->wpos.AimbotY = ImGui::GetWindowPos().y; }
-        } else {
-            if (ImGui::GetWindowPos().x != config->wpos.AimbotX || ImGui::GetWindowPos().y != config->wpos.AimbotY) {
-                ImGui::SetWindowPos({ config->wpos.AimbotX, config->wpos.AimbotY });
-            }
-        }
-    }
-
+    ImGui::Checkbox("On key", &config->aimbotOnKey);
+    ImGui::SameLine();
+    ImGui::PushID("Aimbot Key");
+    hotkey2("", config->aimbotKey);
+    ImGui::PopID();
+    ImGui::SameLine();
+    ImGui::PushID(2);
+    ImGui::PushItemWidth(70.0f);
+    ImGui::Combo("", &config->aimbotKeyMode, "Hold\0Toggle\0");
+    ImGui::PopItemWidth();
+    ImGui::PopID();
+    ImGui::Separator();
     static int currentCategory{ 0 };
     ImGui::PushItemWidth(110.0f);
     ImGui::PushID(0);
@@ -242,18 +272,8 @@ void GUI::renderAimbotWindow(bool contentOnly) noexcept
     ImGui::PopID();
     ImGui::SameLine();
     ImGui::Checkbox("Enabled", &config->aimbot[currentWeapon].enabled);
-    ImGui::Separator();
     ImGui::Columns(2, nullptr, false);
     ImGui::SetColumnOffset(1, 220.0f);
-    ImGui::Checkbox("On key", &config->aimbot[currentWeapon].onKey);
-    ImGui::SameLine();
-    hotkey(config->aimbot[currentWeapon].key);
-    ImGui::SameLine();
-    ImGui::PushID(2);
-    ImGui::PushItemWidth(70.0f);
-    ImGui::Combo("", &config->aimbot[currentWeapon].keyMode, "Hold\0Toggle\0");
-    ImGui::PopItemWidth();
-    ImGui::PopID();
     ImGui::Checkbox("Aimlock", &config->aimbot[currentWeapon].aimlock);
     ImGui::Checkbox("Silent", &config->aimbot[currentWeapon].silent);
     ImGui::Checkbox("Friendly fire", &config->aimbot[currentWeapon].friendlyFire);
@@ -268,17 +288,12 @@ void GUI::renderAimbotWindow(bool contentOnly) noexcept
     ImGui::PushItemWidth(240.0f);
     ImGui::SliderFloat("Fov", &config->aimbot[currentWeapon].fov, 0.0f, 255.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
     ImGui::SliderFloat("Smooth", &config->aimbot[currentWeapon].smooth, 1.0f, 100.0f, "%.2f");
-    ImGui::SliderFloat("Recoil control x", &config->aimbot[currentWeapon].recoilControlX, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
-    ImGui::SliderFloat("Recoil control y", &config->aimbot[currentWeapon].recoilControlY, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
     ImGui::SliderFloat("Max aim inaccuracy", &config->aimbot[currentWeapon].maxAimInaccuracy, 0.0f, 1.0f, "%.5f", ImGuiSliderFlags_Logarithmic);
     ImGui::SliderFloat("Max shot inaccuracy", &config->aimbot[currentWeapon].maxShotInaccuracy, 0.0f, 1.0f, "%.5f", ImGuiSliderFlags_Logarithmic);
     ImGui::InputInt("Min damage", &config->aimbot[currentWeapon].minDamage);
     config->aimbot[currentWeapon].minDamage = std::clamp(config->aimbot[currentWeapon].minDamage, 0, 250);
     ImGui::Checkbox("Killshot", &config->aimbot[currentWeapon].killshot);
     ImGui::Checkbox("Between shots", &config->aimbot[currentWeapon].betweenShots);
-	ImGui::Checkbox("Standalone RCS", &config->aimbot[currentWeapon].standaloneRecoilControl);
-	ImGui::InputInt("Ignore Shots", &config->aimbot[currentWeapon].shotsFired);
-	config->aimbot[currentWeapon].shotsFired = std::clamp(config->aimbot[currentWeapon].shotsFired, 0, 10);
     ImGui::Columns(1);
     if (!contentOnly)
         ImGui::End();
@@ -290,24 +305,8 @@ void GUI::renderAntiAimWindow(bool contentOnly) noexcept
         if (!window.antiAim)
             return;
         ImGui::SetNextWindowSize({ 0.0f, 0.0f });
-        if (config->wpos.LockSelectedFlags[1] && config->style.menuStyle == 0) {
-            ImGui::Begin("Anti aim", &window.antiAim, windowFlags | wposwindowFlags);
-        } else {
-            ImGui::Begin("Anti aim", &window.antiAim, windowFlags);
-        }
+        ImGui::Begin("Anti aim", &window.antiAim, windowFlags);
     }
-
-    if (config->style.menuStyle == 0) {
-        if (!config->wpos.LockSelectedFlags[1]) {
-            if (config->wpos.AntiAimX != ImGui::GetWindowPos().x) { config->wpos.AntiAimX = ImGui::GetWindowPos().x; }
-            if (config->wpos.AntiAimY != ImGui::GetWindowPos().y) { config->wpos.AntiAimY = ImGui::GetWindowPos().y; }
-        } else {
-            if (ImGui::GetWindowPos().x != config->wpos.AntiAimX || ImGui::GetWindowPos().y != config->wpos.AntiAimY) {
-                ImGui::SetWindowPos({ config->wpos.AntiAimX, config->wpos.AntiAimY });
-            }
-        }
-    }
-
     ImGui::Checkbox("Enabled", &config->antiAim.enabled);
     ImGui::Checkbox("##pitch", &config->antiAim.pitch);
     ImGui::SameLine();
@@ -323,24 +322,8 @@ void GUI::renderTriggerbotWindow(bool contentOnly) noexcept
         if (!window.triggerbot)
             return;
         ImGui::SetNextWindowSize({ 0.0f, 0.0f });
-        if (config->wpos.LockSelectedFlags[2] && config->style.menuStyle == 0) {
-            ImGui::Begin("Triggerbot", &window.triggerbot, windowFlags | wposwindowFlags);
-        } else {
-            ImGui::Begin("Triggerbot", &window.triggerbot, windowFlags);
-        }
+        ImGui::Begin("Triggerbot", &window.triggerbot, windowFlags);
     }
-
-    if (config->style.menuStyle == 0) {
-        if (!config->wpos.LockSelectedFlags[2]) {
-            if (config->wpos.TriggerBotX != ImGui::GetWindowPos().x) { config->wpos.TriggerBotX = ImGui::GetWindowPos().x; }
-            if (config->wpos.TriggerBotY != ImGui::GetWindowPos().y) { config->wpos.TriggerBotY = ImGui::GetWindowPos().y; }
-        } else {
-            if (ImGui::GetWindowPos().x != config->wpos.TriggerBotX || ImGui::GetWindowPos().y != config->wpos.TriggerBotY) {
-                ImGui::SetWindowPos({ config->wpos.TriggerBotX, config->wpos.TriggerBotY });
-            }
-        }
-    }
-
     static int currentCategory{ 0 };
     ImGui::PushItemWidth(110.0f);
     ImGui::PushID(0);
@@ -436,9 +419,7 @@ void GUI::renderTriggerbotWindow(bool contentOnly) noexcept
     ImGui::SameLine();
     ImGui::Checkbox("Enabled", &config->triggerbot[currentWeapon].enabled);
     ImGui::Separator();
-    ImGui::Checkbox("On key", &config->triggerbot[currentWeapon].onKey);
-    ImGui::SameLine();
-    hotkey(config->triggerbot[currentWeapon].key);
+    hotkey2("Hold Key", config->triggerbotHoldKey);
     ImGui::Checkbox("Friendly fire", &config->triggerbot[currentWeapon].friendlyFire);
     ImGui::Checkbox("Scoped only", &config->triggerbot[currentWeapon].scopedOnly);
     ImGui::Checkbox("Ignore flash", &config->triggerbot[currentWeapon].ignoreFlash);
@@ -451,8 +432,6 @@ void GUI::renderTriggerbotWindow(bool contentOnly) noexcept
     config->triggerbot[currentWeapon].minDamage = std::clamp(config->triggerbot[currentWeapon].minDamage, 0, 250);
     ImGui::Checkbox("Killshot", &config->triggerbot[currentWeapon].killshot);
     ImGui::SliderFloat("Burst Time", &config->triggerbot[currentWeapon].burstTime, 0.0f, 0.5f, "%.3f s");
-	ImGui::SliderFloat("Max aim inaccuracy", &config->triggerbot[currentWeapon].maxAimInaccuracy, 0.0f, 1.0f, "%.5f", 2.0f);
-	ImGui::SliderFloat("Max shot inaccuracy", &config->triggerbot[currentWeapon].maxShotInaccuracy, 0.0f, 1.0f, "%.5f", 2.0f);
 
     if (!contentOnly)
         ImGui::End();
@@ -464,94 +443,14 @@ void GUI::renderBacktrackWindow(bool contentOnly) noexcept
         if (!window.backtrack)
             return;
         ImGui::SetNextWindowSize({ 0.0f, 0.0f });
-        if (config->wpos.LockSelectedFlags[3] && config->style.menuStyle == 0) {
-            ImGui::Begin("Backtrack", &window.backtrack, windowFlags | wposwindowFlags);
-        } else {
-            ImGui::Begin("Backtrack", &window.backtrack, windowFlags);
-        }
+        ImGui::Begin("Backtrack", &window.backtrack, windowFlags);
     }
-
-    if (config->style.menuStyle == 0) {
-        if (!config->wpos.LockSelectedFlags[3]) {
-            if (config->wpos.BacktrackX != ImGui::GetWindowPos().x) { config->wpos.BacktrackX = ImGui::GetWindowPos().x; }
-            if (config->wpos.BacktrackY != ImGui::GetWindowPos().y) { config->wpos.BacktrackY = ImGui::GetWindowPos().y; }
-        } else {
-            if (ImGui::GetWindowPos().x != config->wpos.BacktrackX || ImGui::GetWindowPos().y != config->wpos.BacktrackY) {
-                ImGui::SetWindowPos({ config->wpos.BacktrackX, config->wpos.BacktrackY });
-            }
-        }
-    }
-
     ImGui::Checkbox("Enabled", &config->backtrack.enabled);
-    ImGui::SameLine();
-    ImGui::Checkbox("Extend with fake ping", &config->backtrack.fakeLatency);
     ImGui::Checkbox("Ignore smoke", &config->backtrack.ignoreSmoke);
-    ImGui::SameLine();
     ImGui::Checkbox("Recoil based fov", &config->backtrack.recoilBasedFov);
-    ImGui::Checkbox("Ping based", &config->backtrack.pingBased);
-	ImGui::Checkbox("Draw all ticks", &config->backtrack.drawAllTicks);
-    int TimeLimitRoof = 200; if (config->backtrack.fakeLatency) { TimeLimitRoof = 400; } else { TimeLimitRoof = 200; if (config->backtrack.timeLimit >= 201) { config->backtrack.timeLimit = 200; } }
-    ImGui::PushItemWidth(220.0f); ImGui::PushID(0);
-    ImGui::SliderInt("", &config->backtrack.timeLimit, 1, TimeLimitRoof, "Time Limit %d ms");
-    if (!contentOnly)
-        ImGui::End();
-}
-
-void GUI::renderGlowWindow(bool contentOnly) noexcept
-{
-    if (!contentOnly) {
-        if (!window.glow)
-            return;
-        ImGui::SetNextWindowSize({ 450.0f, 0.0f });
-        if (config->wpos.LockSelectedFlags[4] && config->style.menuStyle == 0) {
-            ImGui::Begin("Glow", &window.glow, windowFlags | wposwindowFlags);
-        } else {
-            ImGui::Begin("Glow", &window.glow, windowFlags);
-        }
-    }
-
-    if (config->style.menuStyle == 0) {
-        if (!config->wpos.LockSelectedFlags[4]) {
-            if (config->wpos.GlowX != ImGui::GetWindowPos().x) { config->wpos.GlowX = ImGui::GetWindowPos().x; }
-            if (config->wpos.GlowY != ImGui::GetWindowPos().y) { config->wpos.GlowY = ImGui::GetWindowPos().y; }
-        } else {
-            if (ImGui::GetWindowPos().x != config->wpos.GlowX || ImGui::GetWindowPos().y != config->wpos.GlowY) {
-                ImGui::SetWindowPos({ config->wpos.GlowX, config->wpos.GlowY });
-            }
-        }
-    }
-
-    static int currentCategory{ 0 };
-    ImGui::PushItemWidth(110.0f);
-    ImGui::PushID(0);
-    ImGui::Combo("", &currentCategory, "Allies\0Enemies\0Planting\0Defusing\0Local player\0Weapons\0C4\0Planted C4\0Chickens\0Defuse kits\0Projectiles\0Hostages\0Ragdolls\0");
-    ImGui::PopID();
-    static int currentItem{ 0 };
-    if (currentCategory <= 3) {
-        ImGui::SameLine();
-        static int currentType{ 0 };
-        ImGui::PushID(1);
-        ImGui::Combo("", &currentType, "All\0Visible\0Occluded\0");
-        ImGui::PopID();
-        currentItem = currentCategory * 3 + currentType;
-    } else {
-        currentItem = currentCategory + 8;
-    }
-
-    ImGui::SameLine();
-    ImGui::Checkbox("Enabled", &config->glow[currentItem].enabled);
-    ImGui::Separator();
-    ImGui::Columns(2, nullptr, false);
-    ImGui::SetColumnOffset(1, 150.0f);
-    ImGui::Checkbox("Health based", &config->glow[currentItem].healthBased);
-
-    ImGuiCustom::colorPopup("Color", config->glow[currentItem].color, &config->glow[currentItem].rainbow, &config->glow[currentItem].rainbowSpeed);
-
-    ImGui::NextColumn();
-    ImGui::SetNextItemWidth(100.0f);
-    ImGui::Combo("Style", &config->glow[currentItem].style, "Default\0Rim3d\0Edge\0Edge Pulse\0");
-
-    ImGui::Columns(1);
+    ImGui::PushItemWidth(220.0f);
+    ImGui::SliderInt("Time limit", &config->backtrack.timeLimit, 1, 200, "%d ms");
+    ImGui::PopItemWidth();
     if (!contentOnly)
         ImGui::End();
 }
@@ -562,24 +461,8 @@ void GUI::renderChamsWindow(bool contentOnly) noexcept
         if (!window.chams)
             return;
         ImGui::SetNextWindowSize({ 0.0f, 0.0f });
-        if (config->wpos.LockSelectedFlags[5] && config->style.menuStyle == 0) {
-            ImGui::Begin("Chams", &window.chams, windowFlags | wposwindowFlags);
-        } else {
-            ImGui::Begin("Chams", &window.chams, windowFlags);
-        }
+        ImGui::Begin("Chams", &window.chams, windowFlags);
     }
-
-    if (config->style.menuStyle == 0) {
-        if (!config->wpos.LockSelectedFlags[5]) {
-            if (config->wpos.ChamsX != ImGui::GetWindowPos().x) { config->wpos.ChamsX = ImGui::GetWindowPos().x; }
-            if (config->wpos.ChamsY != ImGui::GetWindowPos().y) { config->wpos.ChamsY = ImGui::GetWindowPos().y; }
-        } else {
-            if (ImGui::GetWindowPos().x != config->wpos.ChamsX || ImGui::GetWindowPos().y != config->wpos.ChamsY) {
-                ImGui::SetWindowPos({ config->wpos.ChamsX, config->wpos.ChamsY });
-            }
-        }
-    }
-
     static int currentCategory{ 0 };
     ImGui::PushItemWidth(110.0f);
     ImGui::PushID(0);
@@ -622,7 +505,7 @@ void GUI::renderChamsWindow(bool contentOnly) noexcept
     ImGui::Checkbox("Wireframe", &chams.wireframe);
     ImGui::Checkbox("Cover", &chams.cover);
     ImGui::Checkbox("Ignore-Z", &chams.ignorez);
-    ImGuiCustom::colorPopup("Color", chams.color, &chams.rainbow, &chams.rainbowSpeed);
+    ImGuiCustom::colorPicker("Color", chams);
 
     if (!contentOnly) {
         ImGui::End();
@@ -635,23 +518,12 @@ void GUI::renderStreamProofESPWindow(bool contentOnly) noexcept
         if (!window.streamProofESP)
             return;
         ImGui::SetNextWindowSize({ 0.0f, 0.0f });
-        if (config->wpos.LockSelectedFlags[6] && config->style.menuStyle == 0) {
-            ImGui::Begin("ESP", &window.streamProofESP, windowFlags | wposwindowFlags);
-        } else {
-            ImGui::Begin("ESP", &window.streamProofESP, windowFlags);
-        }
+        ImGui::Begin("ESP", &window.streamProofESP, windowFlags);
     }
 
-    if (config->style.menuStyle == 0) {
-        if (!config->wpos.LockSelectedFlags[6]) {
-            if (config->wpos.EspX != ImGui::GetWindowPos().x) { config->wpos.EspX = ImGui::GetWindowPos().x; }
-            if (config->wpos.EspY != ImGui::GetWindowPos().y) { config->wpos.EspY = ImGui::GetWindowPos().y; }
-        } else {
-            if (ImGui::GetWindowPos().x != config->wpos.EspX || ImGui::GetWindowPos().y != config->wpos.EspY) {
-                ImGui::SetWindowPos({ config->wpos.EspX, config->wpos.EspY });
-            }
-        }
-    }
+    hotkey2("Toggle Key", config->streamProofESP.toggleKey, 80.0f);
+    hotkey2("Hold Key", config->streamProofESP.holdKey, 80.0f);
+    ImGui::Separator();
 
     static std::size_t currentCategory;
     static auto currentItem = "All";
@@ -902,12 +774,12 @@ void GUI::renderStreamProofESPWindow(bool contentOnly) noexcept
         ImGui::Checkbox("Enabled", &sharedConfig.enabled);
         ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 260.0f);
         ImGui::SetNextItemWidth(220.0f);
-        if (ImGui::BeginCombo("Font", config->systemFonts[sharedConfig.font.index].c_str())) {
-            for (size_t i = 0; i < config->systemFonts.size(); i++) {
-                bool isSelected = config->systemFonts[i] == sharedConfig.font.name;
-                if (ImGui::Selectable(config->systemFonts[i].c_str(), isSelected, 0, { 250.0f, 0.0f })) {
+        if (ImGui::BeginCombo("Font", config->getSystemFonts()[sharedConfig.font.index].c_str())) {
+            for (size_t i = 0; i < config->getSystemFonts().size(); i++) {
+                bool isSelected = config->getSystemFonts()[i] == sharedConfig.font.name;
+                if (ImGui::Selectable(config->getSystemFonts()[i].c_str(), isSelected, 0, { 250.0f, 0.0f })) {
                     sharedConfig.font.index = i;
-                    sharedConfig.font.name = config->systemFonts[i];
+                    sharedConfig.font.name = config->getSystemFonts()[i];
                     config->scheduleFontLoad(sharedConfig.font.name);
                 }
                 if (isSelected)
@@ -1031,24 +903,8 @@ void GUI::renderVisualsWindow(bool contentOnly) noexcept
         if (!window.visuals)
             return;
         ImGui::SetNextWindowSize({ 680.0f, 0.0f });
-        if (config->wpos.LockSelectedFlags[7] && config->style.menuStyle == 0) {
-            ImGui::Begin("Visuals", &window.visuals, windowFlags | wposwindowFlags);
-        } else {
-            ImGui::Begin("Visuals", &window.visuals, windowFlags);
-        }
+        ImGui::Begin("Visuals", &window.visuals, windowFlags);
     }
-
-    if (config->style.menuStyle == 0) {
-        if (!config->wpos.LockSelectedFlags[7]) {
-            if (config->wpos.VisualsX != ImGui::GetWindowPos().x) { config->wpos.VisualsX = ImGui::GetWindowPos().x; }
-            if (config->wpos.VisualsY != ImGui::GetWindowPos().y) { config->wpos.VisualsY = ImGui::GetWindowPos().y; }
-        } else {
-            if (ImGui::GetWindowPos().x != config->wpos.VisualsX || ImGui::GetWindowPos().y != config->wpos.VisualsY) {
-                ImGui::SetWindowPos({ config->wpos.VisualsX, config->wpos.VisualsY });
-            }
-        }
-    }
-
     ImGui::Columns(2, nullptr, false);
     ImGui::SetColumnOffset(1, 280.0f);
     constexpr auto playerModels = "Default\0Special Agent Ava | FBI\0Operator | FBI SWAT\0Markus Delrow | FBI HRT\0Michael Syfers | FBI Sniper\0B Squadron Officer | SAS\0Seal Team 6 Soldier | NSWC SEAL\0Buckshot | NSWC SEAL\0Lt. Commander Ricksaw | NSWC SEAL\0Third Commando Company | KSK\0'Two Times' McCoy | USAF TACP\0Dragomir | Sabre\0Rezan The Ready | Sabre\0'The Doctor' Romanov | Sabre\0Maximus | Sabre\0Blackwolf | Sabre\0The Elite Mr. Muhlik | Elite Crew\0Ground Rebel | Elite Crew\0Osiris | Elite Crew\0Prof. Shahmat | Elite Crew\0Enforcer | Phoenix\0Slingshot | Phoenix\0Soldier | Phoenix\0Pirate\0Pirate Variant A\0Pirate Variant B\0Pirate Variant C\0Pirate Variant D\0Anarchist\0Anarchist Variant A\0Anarchist Variant B\0Anarchist Variant C\0Anarchist Variant D\0Balkan Variant A\0Balkan Variant B\0Balkan Variant C\0Balkan Variant D\0Balkan Variant E\0Jumpsuit Variant A\0Jumpsuit Variant B\0Jumpsuit Variant C\0Street Soldier | Phoenix\0'Blueberries' Buckshot | NSWC SEAL\0'Two Times' McCoy | TACP Cavalry\0Rezan the Redshirt | Sabre\0Dragomir | Sabre Footsoldier\0Cmdr. Mae 'Dead Cold' Jamison | SWAT\0 1st Lieutenant Farlow | SWAT\0John 'Van Healen' Kask | SWAT\0Bio-Haz Specialist | SWAT\0Sergeant Bombson | SWAT\0Chem-Haz Specialist | SWAT\0Sir Bloody Miami Darryl | The Professionals\0Sir Bloody Silent Darryl | The Professionals\0Sir Bloody Skullhead Darryl | The Professionals\0Sir Bloody Darryl Royale | The Professionals\0Sir Bloody Loudmouth Darryl | The Professionals\0Safecracker Voltzmann | The Professionals\0Little Kev | The Professionals\0Number K | The Professionals\0Getaway Sally | The Professionals\0";
@@ -1072,10 +928,14 @@ void GUI::renderVisualsWindow(bool contentOnly) noexcept
     ImGui::NextColumn();
     ImGui::Checkbox("Zoom", &config->visuals.zoom);
     ImGui::SameLine();
-    hotkey(config->visuals.zoomKey);
+    ImGui::PushID("Zoom Key");
+    hotkey2("", config->visuals.zoomKey);
+    ImGui::PopID();
     ImGui::Checkbox("Thirdperson", &config->visuals.thirdperson);
     ImGui::SameLine();
-    hotkey(config->visuals.thirdpersonKey);
+    ImGui::PushID("Thirdperson Key");
+    hotkey2("", config->visuals.thirdpersonKey);
+    ImGui::PopID();
     ImGui::PushItemWidth(290.0f);
     ImGui::PushID(0);
     ImGui::SliderInt("", &config->visuals.thirdpersonDistance, 0, 1000, "Thirdperson distance: %d");
@@ -1096,7 +956,7 @@ void GUI::renderVisualsWindow(bool contentOnly) noexcept
     ImGui::SliderFloat("", &config->visuals.brightness, 0.0f, 1.0f, "Brightness: %.2f");
     ImGui::PopID();
     ImGui::PopItemWidth();
-    ImGui::Combo("Skybox", &config->visuals.skybox, Helpers::getSkyboxes().data(), Helpers::getSkyboxes().size());
+    ImGui::Combo("Skybox", &config->visuals.skybox, Visuals::skyboxList.data(), Visuals::skyboxList.size());
     ImGuiCustom::colorPicker("World color", config->visuals.world);
     ImGuiCustom::colorPicker("Sky color", config->visuals.sky);
     ImGui::Checkbox("Deagle spinner", &config->visuals.deagleSpinner);
@@ -1105,6 +965,8 @@ void GUI::renderVisualsWindow(bool contentOnly) noexcept
     ImGui::SliderFloat("Hit effect time", &config->visuals.hitEffectTime, 0.1f, 1.5f, "%.2fs");
     ImGui::Combo("Hit marker", &config->visuals.hitMarker, "None\0Default (Cross)\0");
     ImGui::SliderFloat("Hit marker time", &config->visuals.hitMarkerTime, 0.1f, 1.5f, "%.2fs");
+    ImGuiCustom::colorPicker("Bullet Tracers", config->visuals.bulletTracers.color.color.data(), &config->visuals.bulletTracers.color.color[3], nullptr, nullptr, &config->visuals.bulletTracers.enabled);
+
     ImGui::Checkbox("Color correction", &config->visuals.colorCorrection.enabled);
     ImGui::SameLine();
     bool ccPopup = ImGui::Button("Edit");
@@ -1134,21 +996,9 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
         if (!window.skinChanger)
             return;
         ImGui::SetNextWindowSize({ 700.0f, 0.0f });
-        if (config->wpos.LockSelectedFlags[8] && config->style.menuStyle == 0) {
-            ImGui::Begin("Skin changer", &window.skinChanger, windowFlags | wposwindowFlags);
-        } else {
-            ImGui::Begin("Skin changer", &window.skinChanger, windowFlags);
-        }
-    }
-
-    if (config->style.menuStyle == 0) {
-        if (!config->wpos.LockSelectedFlags[8]) {
-            if (config->wpos.SkinchangerX != ImGui::GetWindowPos().x) { config->wpos.SkinchangerX = ImGui::GetWindowPos().x; }
-            if (config->wpos.SkinchangerY != ImGui::GetWindowPos().y) { config->wpos.SkinchangerY = ImGui::GetWindowPos().y; }
-        } else {
-            if (ImGui::GetWindowPos().x != config->wpos.SkinchangerX || ImGui::GetWindowPos().y != config->wpos.SkinchangerY) {
-                ImGui::SetWindowPos({ config->wpos.SkinchangerX, config->wpos.SkinchangerY });
-            }
+        if (!ImGui::Begin("Skin changer", &window.skinChanger, windowFlags)) {
+            ImGui::End();
+            return;
         }
     }
 
@@ -1156,13 +1006,39 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
 
     ImGui::PushItemWidth(110.0f);
     ImGui::Combo("##1", &itemIndex, [](void* data, int idx, const char** out_text) {
-        *out_text = game_data::weapon_names[idx].name;
+        *out_text = SkinChanger::weapon_names[idx].name;
         return true;
-        }, nullptr, IM_ARRAYSIZE(game_data::weapon_names), 5);
+        }, nullptr, SkinChanger::weapon_names.size(), 5);
     ImGui::PopItemWidth();
 
     auto& selected_entry = config->skinChanger[itemIndex];
     selected_entry.itemIdIndex = itemIndex;
+
+    constexpr auto rarityColor = [](int rarity) {
+        constexpr auto rarityColors = std::to_array<ImU32>({
+            IM_COL32(0,     0,   0,   0),
+            IM_COL32(176, 195, 217, 255),
+            IM_COL32( 94, 152, 217, 255),
+            IM_COL32( 75, 105, 255, 255),
+            IM_COL32(136,  71, 255, 255),
+            IM_COL32(211,  44, 230, 255),
+            IM_COL32(235,  75,  75, 255),
+            IM_COL32(228, 174,  57, 255)
+        });
+        return rarityColors[static_cast<std::size_t>(rarity) < rarityColors.size() ? rarity : 0];
+    };
+
+    constexpr auto passesFilter = [](const std::wstring& str, std::wstring filter) {
+        constexpr auto delimiter = L" ";
+        wchar_t* _;
+        wchar_t* token = std::wcstok(filter.data(), delimiter, &_);
+        while (token) {
+            if (!std::wcsstr(str.c_str(), token))
+                return false;
+            token = std::wcstok(nullptr, delimiter, &_);
+        }
+        return true;
+    };
 
     {
         ImGui::SameLine();
@@ -1174,52 +1050,55 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
         selected_entry.stat_trak = (std::max)(selected_entry.stat_trak, -1);
         ImGui::SliderFloat("Wear", &selected_entry.wear, FLT_MIN, 1.f, "%.10f", ImGuiSliderFlags_Logarithmic);
 
-        static std::string filter;
-        ImGui::PushID("Search");
-        ImGui::InputTextWithHint("", "Search", &filter);
-        ImGui::PopID();
+        const auto& kits = itemIndex == 1 ? SkinChanger::getGloveKits() : SkinChanger::getSkinKits();
 
-        if (ImGui::ListBoxHeader("Paint Kit")) {
-            const auto& kits = itemIndex == 1 ? SkinChanger::getGloveKits() : SkinChanger::getSkinKits();
+        if (ImGui::BeginCombo("Paint Kit", kits[selected_entry.paint_kit_vector_index].name.c_str())) {
+            ImGui::PushID("Paint Kit");
+            ImGui::PushID("Search");
+            ImGui::SetNextItemWidth(-1.0f);
+            static std::array<std::string, SkinChanger::weapon_names.size()> filters;
+            auto& filter = filters[itemIndex];
+            ImGui::InputTextWithHint("", "Search", &filter);
+            if (ImGui::IsItemHovered() || (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0)))
+                ImGui::SetKeyboardFocusHere(-1);
+            ImGui::PopID();
 
-            const std::locale original;
-            std::locale::global(std::locale{ "en_US.utf8" });
-
-            const auto& facet = std::use_facet<std::ctype<wchar_t>>(std::locale{});
-            std::wstring filterWide(filter.length(), L'\0');
-            const auto newLen = mbstowcs(filterWide.data(), filter.c_str(), filter.length());
-            if (newLen != static_cast<std::size_t>(-1))
-                filterWide.resize(newLen);
-            std::transform(filterWide.begin(), filterWide.end(), filterWide.begin(), [&facet](wchar_t w) { return facet.toupper(w); });
-
-            std::locale::global(original);
-
-            for (std::size_t i = 0; i < kits.size(); ++i) {
-                if (filter.empty() || wcsstr(kits[i].nameUpperCase.c_str(), filterWide.c_str())) {
-                    ImGui::PushID(i);
-                    if (ImGui::Selectable(kits[i].name.c_str(), i == selected_entry.paint_kit_vector_index))
-                        selected_entry.paint_kit_vector_index = i;
-                    ImGui::PopID();
+            const std::wstring filterWide = Helpers::toUpper(Helpers::toWideString(filter));
+            if (ImGui::BeginChild("##scrollarea", { 0, 6 * ImGui::GetTextLineHeightWithSpacing() })) {
+                for (std::size_t i = 0; i < kits.size(); ++i) {
+                    if (filter.empty() || passesFilter(kits[i].nameUpperCase, filterWide)) {
+                        ImGui::PushID(i);
+                        const auto selected = i == selected_entry.paint_kit_vector_index;
+                        if (ImGui::SelectableWithBullet(kits[i].name.c_str(), rarityColor(kits[i].rarity), selected)) {
+                            selected_entry.paint_kit_vector_index = i;
+                            ImGui::CloseCurrentPopup();
+                        }
+                        if (selected && ImGui::IsWindowAppearing())
+                            ImGui::SetScrollHereY();
+                        ImGui::PopID();
+                    }
                 }
+                ImGui::EndChild();
             }
-            ImGui::ListBoxFooter();
+            ImGui::PopID();
+            ImGui::EndCombo();
         }
 
         ImGui::Combo("Quality", &selected_entry.entity_quality_vector_index, [](void* data, int idx, const char** out_text) {
-            *out_text = game_data::quality_names[idx].name;
+            *out_text = SkinChanger::getQualities()[idx].name.c_str(); // safe within this lamba
             return true;
-            }, nullptr, IM_ARRAYSIZE(game_data::quality_names), 5);
+            }, nullptr, SkinChanger::getQualities().size(), 5);
 
         if (itemIndex == 0) {
             ImGui::Combo("Knife", &selected_entry.definition_override_vector_index, [](void* data, int idx, const char** out_text) {
-                *out_text = game_data::knife_names[idx].name;
+                *out_text = SkinChanger::getKnifeTypes()[idx].name.c_str();
                 return true;
-                }, nullptr, IM_ARRAYSIZE(game_data::knife_names), 5);
+                }, nullptr, SkinChanger::getKnifeTypes().size(), 5);
         } else if (itemIndex == 1) {
             ImGui::Combo("Glove", &selected_entry.definition_override_vector_index, [](void* data, int idx, const char** out_text) {
-                *out_text = game_data::glove_names[idx].name;
+                *out_text = SkinChanger::getGloveTypes()[idx].name.c_str();
                 return true;
-                }, nullptr, IM_ARRAYSIZE(game_data::glove_names), 5);
+                }, nullptr, SkinChanger::getGloveTypes().size(), 5);
         } else {
             static auto unused_value = 0;
             selected_entry.definition_override_vector_index = 0;
@@ -1234,7 +1113,7 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
     {
         ImGui::PushID("sticker");
 
-        static auto selectedStickerSlot = 0;
+        static std::size_t selectedStickerSlot = 0;
 
         ImGui::PushItemWidth(-1);
 
@@ -1257,35 +1136,37 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
 
         auto& selected_sticker = selected_entry.stickers[selectedStickerSlot];
 
-        static std::string filter;
-        ImGui::PushID("Search");
-        ImGui::InputTextWithHint("", "Search", &filter);
-        ImGui::PopID();
+        const auto& kits = SkinChanger::getStickerKits();
+        if (ImGui::BeginCombo("Sticker", kits[selected_sticker.kit_vector_index].name.c_str())) {
+            ImGui::PushID("Sticker");
+            ImGui::PushID("Search");
+            ImGui::SetNextItemWidth(-1.0f);
+            static std::array<std::string, SkinChanger::weapon_names.size()> filters;
+            auto& filter = filters[itemIndex];
+            ImGui::InputTextWithHint("", "Search", &filter);
+            if (ImGui::IsItemHovered() || (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0)))
+                ImGui::SetKeyboardFocusHere(-1);
+            ImGui::PopID();
 
-        if (ImGui::ListBoxHeader("Sticker")) {
-            const auto& kits = SkinChanger::getStickerKits();
-
-            const std::locale original;
-            std::locale::global(std::locale{ "en_US.utf8" });
-
-            const auto& facet = std::use_facet<std::ctype<wchar_t>>(std::locale{});
-            std::wstring filterWide(filter.length(), L'\0');
-            const auto newLen = mbstowcs(filterWide.data(), filter.c_str(), filter.length());
-            if (newLen != static_cast<std::size_t>(-1))
-                filterWide.resize(newLen);
-            std::transform(filterWide.begin(), filterWide.end(), filterWide.begin(), [&facet](wchar_t w) { return facet.toupper(w); });
-
-            std::locale::global(original);
-
-            for (std::size_t i = 0; i < kits.size(); ++i) {
-                if (filter.empty() || wcsstr(kits[i].nameUpperCase.c_str(), filterWide.c_str())) {
-                    ImGui::PushID(i);
-                    if (ImGui::Selectable(kits[i].name.c_str(), i == selected_sticker.kit_vector_index))
-                        selected_sticker.kit_vector_index = i;
-                    ImGui::PopID();
+            const std::wstring filterWide = Helpers::toUpper(Helpers::toWideString(filter));
+            if (ImGui::BeginChild("##scrollarea", { 0, 6 * ImGui::GetTextLineHeightWithSpacing() })) {
+                for (std::size_t i = 0; i < kits.size(); ++i) {
+                    if (filter.empty() || passesFilter(kits[i].nameUpperCase, filterWide)) {
+                        ImGui::PushID(i);
+                        const auto selected = i == selected_sticker.kit_vector_index;
+                        if (ImGui::SelectableWithBullet(kits[i].name.c_str(), rarityColor(kits[i].rarity), selected)) {
+                            selected_sticker.kit_vector_index = i;
+                            ImGui::CloseCurrentPopup();
+                        }
+                        if (selected && ImGui::IsWindowAppearing())
+                            ImGui::SetScrollHereY();
+                        ImGui::PopID();
+                    }
                 }
+                ImGui::EndChild();
             }
-            ImGui::ListBoxFooter();
+            ImGui::PopID();
+            ImGui::EndCombo();
         }
 
         ImGui::SliderFloat("Wear", &selected_sticker.wear, FLT_MIN, 1.0f, "%.10f", ImGuiSliderFlags_Logarithmic);
@@ -1315,25 +1196,8 @@ void GUI::renderSoundWindow(bool contentOnly) noexcept
         if (!window.sound)
             return;
         ImGui::SetNextWindowSize({ 0.0f, 0.0f });
-        if (config->wpos.LockSelectedFlags[9] && config->style.menuStyle == 0) {
-            ImGui::Begin("Sound", &window.sound, windowFlags | wposwindowFlags);
-        } else {
-            ImGui::Begin("Sound", &window.sound, windowFlags);
-        }
+        ImGui::Begin("Sound", &window.sound, windowFlags);
     }
-
-    if (config->style.menuStyle == 0) {
-        if (!config->wpos.LockSelectedFlags[9]) {
-            if (config->wpos.SoundX != ImGui::GetWindowPos().x) { config->wpos.SoundX = ImGui::GetWindowPos().x; }
-            if (config->wpos.SoundY != ImGui::GetWindowPos().y) { config->wpos.SoundY = ImGui::GetWindowPos().y; }
-        }
-        else {
-            if (ImGui::GetWindowPos().x != config->wpos.SoundX || ImGui::GetWindowPos().y != config->wpos.SoundY) {
-                ImGui::SetWindowPos({ config->wpos.SoundX, config->wpos.SoundY });
-            }
-        }
-    }
-
     ImGui::SliderInt("Chicken volume", &config->sound.chickenVolume, 0, 200, "%d%%");
 
     static int currentCategory{ 0 };
@@ -1355,23 +1219,7 @@ void GUI::renderStyleWindow(bool contentOnly) noexcept
         if (!window.style)
             return;
         ImGui::SetNextWindowSize({ 0.0f, 0.0f });
-        if (config->wpos.LockSelectedFlags[10] && config->style.menuStyle == 0) {
-            ImGui::Begin("Style", &window.style, windowFlags | wposwindowFlags);
-        } else {
-            ImGui::Begin("Style", &window.style, windowFlags);
-        }
-    }
-
-    if (config->style.menuStyle == 0){
-        if (!config->wpos.LockSelectedFlags[10])
-        {
-            if (config->wpos.StyleX != ImGui::GetWindowPos().x) { config->wpos.StyleX = ImGui::GetWindowPos().x; }
-            if (config->wpos.StyleY != ImGui::GetWindowPos().y) { config->wpos.StyleY = ImGui::GetWindowPos().y; }
-        } else {
-            if (ImGui::GetWindowPos().x != config->wpos.StyleX || ImGui::GetWindowPos().y != config->wpos.StyleY) {
-            ImGui::SetWindowPos({ config->wpos.StyleX, config->wpos.StyleY });
-            }
-        }
+        ImGui::Begin("Style", &window.style, windowFlags);
     }
 
     ImGui::PushItemWidth(150.0f);
@@ -1386,7 +1234,7 @@ void GUI::renderStyleWindow(bool contentOnly) noexcept
         for (int i = 0; i < ImGuiCol_COUNT; i++) {
             if (i && i & 3) ImGui::SameLine(220.0f * (i & 3));
 
-            ImGuiCustom::colorPopup(ImGui::GetStyleColorName(i), (std::array<float, 4>&)style.Colors[i]);
+            ImGuiCustom::colorPicker(ImGui::GetStyleColorName(i), (float*)&style.Colors[i], &style.Colors[i].w);
         }
     }
 
@@ -1399,50 +1247,27 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     if (!contentOnly) {
         if (!window.misc)
             return;
-        ImGui::SetNextWindowSize({ 700.0f, 0.0f });
-        if (config->wpos.LockSelectedFlags[11] && config->style.menuStyle == 0) {
-            ImGui::Begin("Misc", &window.misc, windowFlags | wposwindowFlags);
-        } else {
-            ImGui::Begin("Misc", &window.misc, windowFlags);
-        }
+        ImGui::SetNextWindowSize({ 580.0f, 0.0f });
+        ImGui::Begin("Misc", &window.misc, windowFlags);
     }
-
-    if (config->style.menuStyle == 0) {
-        if (!config->wpos.LockSelectedFlags[11]) {
-            if (config->wpos.MiscX != ImGui::GetWindowPos().x) { config->wpos.MiscX = ImGui::GetWindowPos().x; }
-            if (config->wpos.MiscY != ImGui::GetWindowPos().y) { config->wpos.MiscY = ImGui::GetWindowPos().y; }
-        } else {
-            if (ImGui::GetWindowPos().x != config->wpos.MiscX || ImGui::GetWindowPos().y != config->wpos.MiscY) {
-                ImGui::SetWindowPos({ config->wpos.MiscX, config->wpos.MiscY });
-            }
-        }
-    }
-
     ImGui::Columns(2, nullptr, false);
     ImGui::SetColumnOffset(1, 230.0f);
-    ImGui::TextUnformatted("Menu key");
-    ImGui::SameLine();
-    hotkey(config->misc.menuKey);
-
+    hotkey2("Menu Key", config->misc.menuKey);
     ImGui::Checkbox("Anti AFK kick", &config->misc.antiAfkKick);
     ImGui::Checkbox("Auto strafe", &config->misc.autoStrafe);
     ImGui::Checkbox("Bunny hop", &config->misc.bunnyHop);
-	ImGui::Checkbox("Human Bunny hop", &config->misc.humanBunnyHop);
-	ImGui::SetNextItemWidth(100.0f);
-	ImGui::SliderInt("Bhop Hit Chance", &config->misc.bhop_hit_chance, 0, 100, "%d%");
-	ImGui::SetNextItemWidth(100.0f);
-	ImGui::InputInt("Bhop Restricted Limit", &config->misc.hops_restricted_limit);
-	ImGui::SetNextItemWidth(100.0f);
-	ImGui::InputInt("Max Hops Hit", &config->misc.max_hops_hit);
     ImGui::Checkbox("Fast duck", &config->misc.fastDuck);
     ImGui::Checkbox("Moonwalk", &config->misc.moonwalk);
     ImGui::Checkbox("Edge Jump", &config->misc.edgejump);
     ImGui::SameLine();
-    hotkey(config->misc.edgejumpkey);
+    ImGui::PushID("Edge Jump Key");
+    hotkey2("", config->misc.edgejumpkey);
+    ImGui::PopID();
     ImGui::Checkbox("Slowwalk", &config->misc.slowwalk);
     ImGui::SameLine();
-    hotkey(config->misc.slowwalkKey);
-	ImGui::Checkbox("Sniper crosshair", &config->misc.sniperCrosshair);
+    ImGui::PushID("Slowwalk Key");
+    hotkey2("", config->misc.slowwalkKey);
+    ImGui::PopID();
     ImGuiCustom::colorPicker("Noscope crosshair", config->misc.noscopeCrosshair);
     ImGuiCustom::colorPicker("Recoil crosshair", config->misc.recoilCrosshair);
     ImGui::Checkbox("Auto pistol", &config->misc.autoPistol);
@@ -1454,6 +1279,7 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::Checkbox("Reveal suspect", &config->misc.revealSuspect);
     ImGuiCustom::colorPicker("Spectator list", config->misc.spectatorList);
     ImGuiCustom::colorPicker("Watermark", config->misc.watermark);
+    ImGuiCustom::colorPicker("Offscreen Enemies", config->misc.offscreenEnemies.color, &config->misc.offscreenEnemies.enabled);
     ImGui::Checkbox("Fix animation LOD", &config->misc.fixAnimationLOD);
     ImGui::Checkbox("Fix bone matrix", &config->misc.fixBoneMatrix);
     ImGui::Checkbox("Fix movement", &config->misc.fixMovement);
@@ -1490,12 +1316,14 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     if (ImGui::Button("Setup fake ban"))
         Misc::fakeBan(true);
     ImGui::Checkbox("Fast plant", &config->misc.fastPlant);
+    ImGui::Checkbox("Fast Stop", &config->misc.fastStop);
     ImGuiCustom::colorPicker("Bomb timer", config->misc.bombTimer);
-    ImGui::Checkbox("Bomb Damage Indicator", &config->misc.bombDamage);
     ImGui::Checkbox("Quick reload", &config->misc.quickReload);
     ImGui::Checkbox("Prepare revolver", &config->misc.prepareRevolver);
     ImGui::SameLine();
-    hotkey(config->misc.prepareRevolverKey);
+    ImGui::PushID("Prepare revolver Key");
+    hotkey2("", config->misc.prepareRevolverKey);
+    ImGui::PopID();
     ImGui::Combo("Hit Sound", &config->misc.hitSound, "None\0Metal\0Gamesense\0Bell\0Glass\0Custom\0");
     if (config->misc.hitSound == 5) {
         ImGui::InputText("Hit Sound filename", &config->misc.customHitSound);
@@ -1514,17 +1342,19 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::InputInt("Choked packets", &config->misc.chokedPackets, 1, 5);
     config->misc.chokedPackets = std::clamp(config->misc.chokedPackets, 0, 64);
     ImGui::SameLine();
-    hotkey(config->misc.chokedPacketsKey);
+    ImGui::PushID("Choked packets Key");
+    hotkey2("", config->misc.chokedPacketsKey);
+    ImGui::PopID();
+    /*
     ImGui::Text("Quick healthshot");
     ImGui::SameLine();
     hotkey(config->misc.quickHealthshotKey);
+    */
     ImGui::Checkbox("Grenade Prediction", &config->misc.nadePredict);
     ImGui::Checkbox("Fix tablet signal", &config->misc.fixTabletSignal);
     ImGui::SetNextItemWidth(120.0f);
     ImGui::SliderFloat("Max angle delta", &config->misc.maxAngleDelta, 0.0f, 255.0f, "%.2f");
     ImGui::Checkbox("Fake prime", &config->misc.fakePrime);
-	ImGui::Checkbox("Draw aimbot FOV", &config->misc.drawAimbotFov);
-	ImGui::Checkbox("Fast Stop", &config->misc.fastStop);
     ImGui::Checkbox("Opposite Hand Knife", &config->misc.oppositeHandKnife);
     ImGui::Checkbox("Preserve Killfeed", &config->misc.preserveKillfeed.enabled);
     ImGui::SameLine();
@@ -1538,9 +1368,7 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
         ImGui::EndPopup();
     }
     ImGui::PopID();
-    if (config->style.menuStyle != 1){
-    ImGuiCustom::MultiCombo("Save and lock window position", config->wpos.LockFlags, config->wpos.LockSelectedFlags, 14);
-    } else { ImGui::Checkbox("Save and lock window position", &config->wpos.LockSelectedFlags[14]); }
+
     ImGui::Checkbox("Purchase List", &config->misc.purchaseList.enabled);
     ImGui::SameLine();
 
@@ -1554,7 +1382,6 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
         ImGui::Checkbox("Only During Freeze Time", &config->misc.purchaseList.onlyDuringFreezeTime);
         ImGui::Checkbox("Show Prices", &config->misc.purchaseList.showPrices);
         ImGui::Checkbox("No Title Bar", &config->misc.purchaseList.noTitleBar);
-        ImGui::Checkbox("Lock/Save Scale/Position", &config->wpos.LockSelectedFlags[15]);
         ImGui::EndPopup();
     }
     ImGui::PopID();
@@ -1595,162 +1422,117 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
 
 void GUI::renderConfigWindow(bool contentOnly) noexcept
 {
-	if (!contentOnly) {
-		if (!window.config)
-			return;
-		ImGui::SetNextWindowSize({ 290.0f, 0.0f });
-        if (config->wpos.LockSelectedFlags[13] && config->style.menuStyle == 0) {
-            ImGui::Begin("Config", &window.config, windowFlags | wposwindowFlags);
-        } else {
-		    ImGui::Begin("Config", &window.config, windowFlags);
-        }
-	}
-
-    if (config->style.menuStyle == 0) {
-        if (!config->wpos.LockSelectedFlags[13]) {
-            if (config->wpos.ConfigX != ImGui::GetWindowPos().x) { config->wpos.ConfigX = ImGui::GetWindowPos().x; }
-            if (config->wpos.ConfigY != ImGui::GetWindowPos().y) { config->wpos.ConfigY = ImGui::GetWindowPos().y; }
-        } else {
-            if (ImGui::GetWindowPos().x != config->wpos.ConfigX || ImGui::GetWindowPos().y != config->wpos.ConfigY) {
-                ImGui::SetWindowPos({ config->wpos.ConfigX, config->wpos.ConfigY });
-            }
+    if (!contentOnly) {
+        if (!window.config)
+            return;
+        ImGui::SetNextWindowSize({ 320.0f, 0.0f });
+        if (!ImGui::Begin("Config", &window.config, windowFlags)) {
+            ImGui::End();
+            return;
         }
     }
 
-	ImGui::Columns(2, nullptr, false);
-	ImGui::SetColumnOffset(1, 170.0f);
+    ImGui::Columns(2, nullptr, false);
+    ImGui::SetColumnOffset(1, 170.0f);
 
     static bool incrementalLoad = false;
     ImGui::Checkbox("Incremental Load", &incrementalLoad);
 
-	ImGui::PushItemWidth(160.0f);
+    ImGui::PushItemWidth(160.0f);
 
-	if (ImGui::Button("Reload configs", { 160.0f, 25.0f }))
-		config->listConfigs();
+    auto& configItems = config->getConfigs();
+    static int currentConfig = -1;
 
-	auto& configItems = config->getConfigs();
-	static int currentConfig = -1;
+    static std::string buffer;
 
-	if (static_cast<std::size_t>(currentConfig) >= configItems.size())
-		currentConfig = -1;
-
-	static std::string buffer;
-
-	if (ImGui::ListBox("", &currentConfig, [](void* data, int idx, const char** out_text) {
-		auto& vector = *static_cast<std::vector<std::string>*>(data);
-		*out_text = vector[idx].c_str();
-		return true;
-		}, &configItems, configItems.size(), 5) && currentConfig != -1)
-		buffer = configItems[currentConfig];
-
-		ImGui::PushID(0);
-		if (ImGui::InputTextWithHint("", "config name", &buffer, ImGuiInputTextFlags_EnterReturnsTrue)) {
-			if (currentConfig != -1)
-				config->rename(currentConfig, buffer.c_str());
-		}
-		ImGui::PopID();
-		ImGui::NextColumn();
-
-		ImGui::PushItemWidth(100.0f);
-
-		if (ImGui::Button("Create config", { 100.0f, 25.0f }))
-			config->add(buffer.c_str());
-
-		if (ImGui::Button("Reset config", { 100.0f, 25.0f }))
-			ImGui::OpenPopup("Config to reset");
-
-		if (ImGui::BeginPopup("Config to reset")) {
-			static constexpr const char* names[]{ "Whole", "Aimbot", "Triggerbot", "Backtrack", "Anti aim", "Glow", "Chams", "ESP", "Visuals", "Skin changer", "Sound", "Style", "Misc" };
-			for (int i = 0; i < IM_ARRAYSIZE(names); i++) {
-				if (i == 1) ImGui::Separator();
-
-				if (ImGui::Selectable(names[i])) {
-					switch (i) {
-					case 0: config->reset(); updateColors(); Misc::updateClanTag(true); SkinChanger::scheduleHudUpdate(); break;
-					case 1: config->aimbot = { }; break;
-					case 2: config->triggerbot = { }; break;
-					case 3: config->backtrack = { }; break;
-					case 4: config->antiAim = { }; break;
-					case 5: config->glow = { }; break;
-					case 6: config->chams = { }; break;
-					case 7: config->streamProofESP = { }; break;
-					case 8: config->visuals = { }; break;
-					case 9: config->skinChanger = { }; SkinChanger::scheduleHudUpdate(); break;
-					case 10: config->sound = { }; break;
-					case 11: config->style = { }; updateColors(); break;
-					case 12: config->misc = { };  Misc::updateClanTag(true); break;
-					}
-				}
-			}
-			ImGui::EndPopup();
-		}
-		if (currentConfig != -1) {
-			if (ImGui::Button("Load selected", { 100.0f, 25.0f }))
-				ImGui::OpenPopup("Config to load");
-			if (ImGui::BeginPopup("Config to load")) {
-				static constexpr const char* choices[]{ "Confirm", "Cancel" };
-
-				for (auto i = 0; i < IM_ARRAYSIZE(choices); i++)
-					if (ImGui::Selectable(choices[i]))
-						if (i == 0) {
-							config->load(currentConfig, incrementalLoad);
-							updateColors();
-							SkinChanger::scheduleHudUpdate();
-							Misc::updateClanTag(true);
-						}
-
-				ImGui::EndPopup();
-			}
-
-			if (ImGui::Button("Save selected", { 100.0f, 25.0f }))
-				ImGui::OpenPopup("Config to save");
-			if (ImGui::BeginPopup("Config to save")) {
-				static constexpr const char* choices[]{ "Confirm", "Cancel" };
-
-				for (auto i = 0; i < IM_ARRAYSIZE(choices); i++)
-					if (ImGui::Selectable(choices[i]))
-						if (i == 0) config->save(currentConfig);
-
-				ImGui::EndPopup();
-			}
-
-			if (ImGui::Button("Delete selected", { 100.0f, 25.0f }))
-				ImGui::OpenPopup("Config to delete");
-			if (ImGui::BeginPopup("Config to delete")) {
-				static constexpr const char* choices[]{ "Confirm", "Cancel" };
-
-				for (auto i = 0; i < IM_ARRAYSIZE(choices); i++)
-					if (ImGui::Selectable(choices[i]))
-						if (i == 0) {
-							config->remove(currentConfig);
-							currentConfig = -1;
-							buffer.clear();
-						};
-
-				ImGui::EndPopup();
-			}
-		}
-		ImGui::Columns(1);
-		if (!contentOnly)
-			ImGui::End();
-}
-void GUI::renderGuiStyle2() noexcept
-{
-    ImGui::SetNextWindowSize({ 600.0f, 0.0f });
-    if (config->wpos.LockSelectedFlags[14] && config->style.menuStyle == 0) {
-        ImGui::Begin("Trigon", nullptr, windowFlags | ImGuiWindowFlags_NoTitleBar | wposwindowFlags);
-    } else {
-        ImGui::Begin("Trigon", nullptr, windowFlags | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
+    timeToNextConfigRefresh -= ImGui::GetIO().DeltaTime;
+    if (timeToNextConfigRefresh <= 0.0f) {
+        config->listConfigs();
+        if (const auto it = std::find(configItems.begin(), configItems.end(), buffer); it != configItems.end())
+            currentConfig = std::distance(configItems.begin(), it);
+        timeToNextConfigRefresh = 0.1f;
     }
 
-        if (!config->wpos.LockSelectedFlags[14]) {
-            if (config->wpos.Style2X != ImGui::GetWindowPos().x) { config->wpos.Style2X = ImGui::GetWindowPos().x; }
-            if (config->wpos.Style2Y != ImGui::GetWindowPos().y) { config->wpos.Style2Y = ImGui::GetWindowPos().y; }
-        } else {
-            if (ImGui::GetWindowPos().x != config->wpos.Style2X || ImGui::GetWindowPos().y != config->wpos.Style2Y) {
-                ImGui::SetWindowPos({ config->wpos.Style2X, config->wpos.Style2Y });
+    if (static_cast<std::size_t>(currentConfig) >= configItems.size())
+        currentConfig = -1;
+
+    if (ImGui::ListBox("", &currentConfig, [](void* data, int idx, const char** out_text) {
+        auto& vector = *static_cast<std::vector<std::string>*>(data);
+        *out_text = vector[idx].c_str();
+        return true;
+        }, &configItems, configItems.size(), 5) && currentConfig != -1)
+            buffer = configItems[currentConfig];
+
+        ImGui::PushID(0);
+        if (ImGui::InputTextWithHint("", "config name", &buffer, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            if (currentConfig != -1)
+                config->rename(currentConfig, buffer.c_str());
+        }
+        ImGui::PopID();
+        ImGui::NextColumn();
+
+        ImGui::PushItemWidth(100.0f);
+
+        if (ImGui::Button("Open config directory"))
+            config->openConfigDir();
+
+        if (ImGui::Button("Create config", { 100.0f, 25.0f }))
+            config->add(buffer.c_str());
+
+        if (ImGui::Button("Reset config", { 100.0f, 25.0f }))
+            ImGui::OpenPopup("Config to reset");
+
+        if (ImGui::BeginPopup("Config to reset")) {
+            static constexpr const char* names[]{ "Whole", "Aimbot", "Triggerbot", "Backtrack", "Anti aim", "Glow", "Chams", "ESP", "Visuals", "Skin changer", "Sound", "Style", "Misc" };
+            for (int i = 0; i < IM_ARRAYSIZE(names); i++) {
+                if (i == 1) ImGui::Separator();
+
+                if (ImGui::Selectable(names[i])) {
+                    switch (i) {
+                    case 0: config->reset(); updateColors(); Misc::updateClanTag(true); SkinChanger::scheduleHudUpdate(); break;
+                    case 1: config->aimbot = { }; break;
+                    case 2: config->triggerbot = { }; break;
+                    case 3: config->backtrack = { }; break;
+                    case 4: config->antiAim = { }; break;
+                    case 5: Glow::resetConfig(); break;
+                    case 6: config->chams = { }; break;
+                    case 7: config->streamProofESP = { }; break;
+                    case 8: config->visuals = { }; break;
+                    case 9: config->skinChanger = { }; SkinChanger::scheduleHudUpdate(); break;
+                    case 10: config->sound = { }; break;
+                    case 11: config->style = { }; updateColors(); break;
+                    case 12: config->misc = { };  Misc::updateClanTag(true); break;
+                    }
+                }
+            }
+            ImGui::EndPopup();
+        }
+        if (currentConfig != -1) {
+            if (ImGui::Button("Load selected", { 100.0f, 25.0f })) {
+                config->load(currentConfig, incrementalLoad);
+                updateColors();
+                SkinChanger::scheduleHudUpdate();
+                Misc::updateClanTag(true);
+            }
+            if (ImGui::Button("Save selected", { 100.0f, 25.0f }))
+                config->save(currentConfig);
+            if (ImGui::Button("Delete selected", { 100.0f, 25.0f })) {
+                config->remove(currentConfig);
+
+                if (static_cast<std::size_t>(currentConfig) < configItems.size())
+                    buffer = configItems[currentConfig];
+                else
+                    buffer.clear();
             }
         }
+        ImGui::Columns(1);
+        if (!contentOnly)
+            ImGui::End();
+}
+
+void GUI::renderGuiStyle2() noexcept
+{
+    ImGui::Begin("Osiris", nullptr, windowFlags | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
 
     if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyScroll | ImGuiTabBarFlags_NoTooltip)) {
         if (ImGui::BeginTabItem("Aimbot")) {
@@ -1769,10 +1551,7 @@ void GUI::renderGuiStyle2() noexcept
             renderBacktrackWindow(true);
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Glow")) {
-            renderGlowWindow(true);
-            ImGui::EndTabItem();
-        }
+        Glow::tabItem();
         if (ImGui::BeginTabItem("Chams")) {
             renderChamsWindow(true);
             ImGui::EndTabItem();

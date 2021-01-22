@@ -1,17 +1,10 @@
 #pragma once
 
-#include <algorithm>
+#include <array>
 #include <deque>
 
-#include "../Memory.h"
-#include "../Interfaces.h"
-#include "../SDK/Engine.h"
-#include "../SDK/ConVar.h"
-#include "../SDK/Cvar.h"
-#include "../SDK/GlobalVars.h"
 #include "../SDK/matrix3x4.h"
-#include "../SDK/ModelRender.h"
-#include "../SDK/NetworkChannel.h"
+#include "../SDK/Vector.h"
 
 enum class FrameStage;
 struct UserCmd;
@@ -19,72 +12,16 @@ struct UserCmd;
 namespace Backtrack {
     void update(FrameStage) noexcept;
     void run(UserCmd*) noexcept;
-    void AddLatencyToNetwork(NetworkChannel*, float) noexcept;
-    void UpdateIncomingSequences(bool reset = false) noexcept;
 
     struct Record {
-        Vector head;
         Vector origin;
         float simulationTime;
         matrix3x4 matrix[256];
     };
 
-    extern std::deque<Record> records[65];
-
-    struct Cvars {
-        ConVar* updateRate;
-        ConVar* maxUpdateRate;
-        ConVar* interp;
-        ConVar* interpRatio;
-        ConVar* minInterpRatio;
-        ConVar* maxInterpRatio;
-        ConVar* maxUnlag;
-    };
-
-    extern Cvars cvars;
-
-    struct IncomingSequence
-    {
-        int inreliablestate;
-        int sequencenr;
-        float servertime;
-    };
-
-    extern std::deque<IncomingSequence>sequences;
-
+    const std::deque<Record>& getRecords(std::size_t index) noexcept;
     float getLerp() noexcept;
-
-    constexpr auto valid(float simtime) noexcept
-    {
-		auto network = interfaces->engine->getNetworkChannel();
-		if (!network)
-			return false;
-
-        auto delta = std::clamp(network->getLatency(0) + network->getLatency(1) + getLerp(), 0.f, cvars.maxUnlag->getFloat()) - (memory->globalVars->serverTime() - simtime);
-        return std::fabsf(delta) <= 0.2f;
-    }
-
-    constexpr float getExtraTicks() noexcept
-    {
-        auto network = interfaces->engine->getNetworkChannel();
-        if (!network)
-            return 0.f;
-
-        return std::clamp(network->getLatency(1) - network->getLatency(0), 0.f, cvars.maxUnlag->getFloat());
-    }
-
+    bool valid(float simtime) noexcept;
     int timeToTicks(float time) noexcept;
-
-    static void init() noexcept
-    {
-        records->clear();
-
-        cvars.updateRate = interfaces->cvar->findVar("cl_updaterate");
-        cvars.maxUpdateRate = interfaces->cvar->findVar("sv_maxupdaterate");
-        cvars.interp = interfaces->cvar->findVar("cl_interp");
-        cvars.interpRatio = interfaces->cvar->findVar("cl_interp_ratio");
-        cvars.minInterpRatio = interfaces->cvar->findVar("sv_client_min_interp_ratio");
-        cvars.maxInterpRatio = interfaces->cvar->findVar("sv_client_max_interp_ratio");
-        cvars.maxUnlag = interfaces->cvar->findVar("sv_maxunlag");
-    }
+    void init() noexcept;
 }
