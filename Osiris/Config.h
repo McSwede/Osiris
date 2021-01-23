@@ -51,8 +51,11 @@ public:
         bool betweenShots{ true };
         int shotsFired{ 1 };
         bool standaloneRecoilControl{ false };
+        bool randomRCS{ true };
         float recoilControlX{ 0.0f };
         float recoilControlY{ 0.0f };
+        float recoilControlXMax{ 1.0f };
+        float recoilControlYMax{ 1.0f };
     };
     std::array<Aimbot, 40> aimbot;
     bool aimbotOnKey{ false };

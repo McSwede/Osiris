@@ -292,16 +292,30 @@ void GUI::renderAimbotWindow(bool contentOnly) noexcept
     ImGui::PushItemWidth(240.0f);
     ImGui::SliderFloat("Fov", &config->aimbot[currentWeapon].fov, 0.0f, 255.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
     ImGui::SliderFloat("Smooth", &config->aimbot[currentWeapon].smooth, 1.0f, 100.0f, "%.2f");
-    ImGui::SliderFloat("Recoil control x", &config->aimbot[currentWeapon].recoilControlX, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
-    ImGui::SliderFloat("Recoil control y", &config->aimbot[currentWeapon].recoilControlY, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
     ImGui::SliderFloat("Max aim inaccuracy", &config->aimbot[currentWeapon].maxAimInaccuracy, 0.0f, 1.0f, "%.5f", ImGuiSliderFlags_Logarithmic);
     ImGui::SliderFloat("Max shot inaccuracy", &config->aimbot[currentWeapon].maxShotInaccuracy, 0.0f, 1.0f, "%.5f", ImGuiSliderFlags_Logarithmic);
     ImGui::InputInt("Min damage", &config->aimbot[currentWeapon].minDamage);
     config->aimbot[currentWeapon].minDamage = std::clamp(config->aimbot[currentWeapon].minDamage, 0, 250);
     ImGui::Checkbox("Killshot", &config->aimbot[currentWeapon].killshot);
     ImGui::Checkbox("Between shots", &config->aimbot[currentWeapon].betweenShots);
-    ImGui::Checkbox("Standalone RCS", &config->aimbot[currentWeapon].standaloneRecoilControl);
-    ImGui::InputInt("Ignore Shots", &config->aimbot[currentWeapon].shotsFired);
+    if (!config->aimbot[currentWeapon].silent) {
+        ImGui::Checkbox("Standalone RCS", &config->aimbot[currentWeapon].standaloneRecoilControl);
+        if (config->aimbot[currentWeapon].standaloneRecoilControl) {
+            ImGui::SameLine();
+            ImGui::Checkbox("Random RCS factor", &config->aimbot[currentWeapon].randomRCS);
+            ImGui::InputInt("Ignore Shots", &config->aimbot[currentWeapon].shotsFired);
+            if (config->aimbot[currentWeapon].randomRCS) {
+                ImGui::SliderFloat("Recoil control X min", &config->aimbot[currentWeapon].recoilControlX, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+                ImGui::SliderFloat("Recoil control X max", &config->aimbot[currentWeapon].recoilControlXMax, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+                ImGui::SliderFloat("Recoil control Y min", &config->aimbot[currentWeapon].recoilControlY, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+                ImGui::SliderFloat("Recoil control Y max", &config->aimbot[currentWeapon].recoilControlYMax, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+            }
+            else {
+                ImGui::SliderFloat("Recoil control X", &config->aimbot[currentWeapon].recoilControlX, 0.0f, 1.0f, "%.2f");
+                ImGui::SliderFloat("Recoil control Y", &config->aimbot[currentWeapon].recoilControlY, 0.0f, 1.0f, "%.2f");
+            }
+        }
+    }
     config->aimbot[currentWeapon].shotsFired = std::clamp(config->aimbot[currentWeapon].shotsFired, 0, 10);
     ImGui::Columns(1);
     if (!contentOnly)

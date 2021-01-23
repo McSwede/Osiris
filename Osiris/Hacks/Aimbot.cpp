@@ -10,6 +10,8 @@
 #include "../SDK/PhysicsSurfaceProps.h"
 #include "../SDK/WeaponData.h"
 
+#include <random>
+
 Vector Aimbot::calculateRelativeAngle(const Vector& source, const Vector& destination, const Vector& viewAngles) noexcept
 {
     return ((destination - source).toAngle() - viewAngles).normalize();
@@ -125,18 +127,12 @@ void Aimbot::updateInput() noexcept
         keyPressed = !keyPressed;
 }
 
-static void setRandomSeed(int seed) noexcept
+float getRandom(float min, float max) noexcept
 {
-    using randomSeedFn = void(*)(int);
-    static auto randomSeed{ reinterpret_cast<randomSeedFn>(GetProcAddress(GetModuleHandleA("vstdlib.dll"), "RandomSeed")) };
-    randomSeed(seed);
-}
-
-static float getRandom(float min, float max) noexcept
-{
-    using randomFloatFn = float(*)(float, float);
-    static auto randomFloat{ reinterpret_cast<randomFloatFn>(GetProcAddress(GetModuleHandleA("vstdlib.dll"), "RandomFloat")) };
-    return randomFloat(min, max);
+    std::random_device rd{};
+    std::mt19937 generator(rd());
+    std::uniform_real_distribution<float> dis(min, max);
+    return dis(generator);
 }
 
 void Aimbot::run(UserCmd* cmd) noexcept
@@ -184,10 +180,15 @@ void Aimbot::run(UserCmd* cmd) noexcept
         if (config->aimbot[weaponIndex].standaloneRecoilControl && !config->aimbot[weaponIndex].silent) {
             static Vector lastAimPunch{ };
             if (localPlayer->shotsFired() > config->aimbot[weaponIndex].shotsFired) {
-                setRandomSeed(*memory->predictionRandomSeed);
                 Vector currentPunch{ lastAimPunch.x - aimPunch.x, lastAimPunch.y - aimPunch.y, 0 };
-                currentPunch.x *= getRandom(config->aimbot[weaponIndex].recoilControlY, 1.f);
-                currentPunch.y *= getRandom(config->aimbot[weaponIndex].recoilControlX, 1.f);
+                if (config->aimbot[weaponIndex].randomRCS) {
+                    currentPunch.x *= getRandom(config->aimbot[weaponIndex].recoilControlX, config->aimbot[weaponIndex].recoilControlXMax);
+                    currentPunch.y *= getRandom(config->aimbot[weaponIndex].recoilControlY, config->aimbot[weaponIndex].recoilControlYMax);
+                }
+                else {
+                    currentPunch.x *= config->aimbot[weaponIndex].recoilControlX;
+                    currentPunch.y *= config->aimbot[weaponIndex].recoilControlY;
+                }
                 cmd->viewangles += currentPunch;
             }
             interfaces->engine->setViewAngles(cmd->viewangles);
