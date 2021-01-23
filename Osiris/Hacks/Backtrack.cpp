@@ -9,7 +9,8 @@
 #include "../SDK/NetworkChannel.h"
 #include "../SDK/UserCmd.h"
 
-static std::array<std::deque<Backtrack::Record>, 65> records;
+static std::deque<Backtrack::IncomingSequence>Backtrack::sequences;
+static std::array<std::deque<Backtrack::Record>, 513> records;
 
 struct Cvars {
     ConVar* updateRate;
@@ -50,7 +51,14 @@ void Backtrack::update(FrameStage stage) noexcept
 
             records[i].push_front(record);
 
-            while (records[i].size() > 3 && records[i].size() > static_cast<size_t>(timeToTicks(static_cast<float>(config->backtrack.timeLimit) / 1000.f)))
+            if (config->backtrack.pingBased) {
+                if (auto networkChannel = interfaces->engine->getNetworkChannel(); networkChannel && networkChannel->getLatency(0) > 0.0f)
+                    config->backtrack.pingBasedVal = static_cast<int>(networkChannel->getLatency(0) * 1000);
+            }
+            else
+                config->backtrack.pingBasedVal = config->backtrack.timeLimit;
+
+            while (records[i].size() > 3 && records[i].size() > static_cast<size_t>(timeToTicks(static_cast<float>(config->backtrack.pingBasedVal) / 1000.f + getExtraTicks())))
                 records[i].pop_back();
 
             if (auto invalid = std::find_if(std::cbegin(records[i]), std::cend(records[i]), [](const Record & rec) { return !valid(rec.simulationTime); }); invalid != std::cend(records[i]))
@@ -144,6 +152,59 @@ bool Backtrack::valid(float simtime) noexcept
 
     auto delta = std::clamp(network->getLatency(0) + network->getLatency(1) + getLerp(), 0.f, cvars.maxUnlag->getFloat()) - (memory->globalVars->serverTime() - simtime);
     return std::abs(delta) <= 0.2f;
+}
+
+float Backtrack::getExtraTicks() noexcept
+{
+    auto network = interfaces->engine->getNetworkChannel();
+    if (!network)
+        return 0.f;
+    return std::clamp(network->getLatency(1) - network->getLatency(0), 0.f, cvars.maxUnlag->getFloat());
+}
+
+void Backtrack::AddLatencyToNetwork(NetworkChannel* network, float latency) noexcept
+{
+    for (auto& sequence : sequences)
+    {
+        if (memory->globalVars->serverTime() - sequence.servertime >= latency)
+        {
+            network->InReliableState = sequence.inreliablestate;
+            network->InSequenceNr = sequence.sequencenr;
+            break;
+        }
+    }
+}
+
+void Backtrack::UpdateIncomingSequences(bool reset) noexcept
+{
+    static float lastIncomingSequenceNumber = 0.f;
+
+    if (!config->backtrack.enabled)
+        return;
+
+    if (config->backtrack.timeLimit == 0)
+        return;
+
+    if (!localPlayer)
+        return;
+
+    auto network = interfaces->engine->getNetworkChannel();
+    if (!network)
+        return;
+
+    if (network->InSequenceNr != lastIncomingSequenceNumber)
+    {
+        lastIncomingSequenceNumber = static_cast<float>(network->InSequenceNr);
+
+        IncomingSequence sequence{ };
+        sequence.inreliablestate = network->InReliableState;
+        sequence.sequencenr = network->InSequenceNr;
+        sequence.servertime = memory->globalVars->serverTime();
+        sequences.push_front(sequence);
+    }
+
+    while (sequences.size() > 2048)
+        sequences.pop_back();
 }
 
 int Backtrack::timeToTicks(float time) noexcept

@@ -265,6 +265,7 @@ static void from_json(const json& j, Config::Backtrack& b)
     read(j, "Ignore smoke", b.ignoreSmoke);
     read(j, "Recoil based fov", b.recoilBasedFov);
     read(j, "Time limit", b.timeLimit);
+    read(j, "Ping based value", b.pingBasedVal);
     read(j, "Ping based", b.pingBased);
     read(j, "Fake Latency", b.fakeLatency);
     read(j, "Draw all ticks", b.drawAllTicks);
@@ -737,6 +738,7 @@ static void to_json(json& j, const Config::Backtrack& o, const Config::Backtrack
     WRITE("Ignore smoke", ignoreSmoke);
     WRITE("Recoil based fov", recoilBasedFov);
     WRITE("Time limit", timeLimit);
+    WRITE("Ping based value", pingBasedVal);
     WRITE("Ping based", pingBased);
     WRITE("Fake Latency", fakeLatency);
     WRITE("Draw all ticks", drawAllTicks);

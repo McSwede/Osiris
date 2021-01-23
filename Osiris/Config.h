@@ -84,6 +84,7 @@ public:
         bool ignoreSmoke{ false };
         bool recoilBasedFov{ false };
         int timeLimit{ 0 };
+        int pingBasedVal{ 0 };
         bool pingBased{ false };
         bool fakeLatency{ false };
         bool drawAllTicks{ false };

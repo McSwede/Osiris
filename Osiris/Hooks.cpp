@@ -50,7 +50,6 @@
 #include "SDK/FrameStage.h"
 #include "SDK/GameEvent.h"
 #include "SDK/GameUI.h"
-#include "SDK/GlobalVars.h"
 #include "SDK/InputSystem.h"
 #include "SDK/MaterialSystem.h"
 #include "SDK/ModelRender.h"
@@ -140,6 +139,29 @@ static HRESULT __stdcall reset(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* 
 
 #endif
 
+static int __fastcall SendDatagram(NetworkChannel* network, void* edx, void* datagram)
+{
+    auto original = hooks->networkChannel.getOriginal<int, 46, void*>(datagram);
+    if (!config->backtrack.fakeLatency || datagram || !interfaces->engine->isInGame() || !config->backtrack.enabled)
+    {
+        return original(network, datagram);
+    }
+    int instate = network->InReliableState;
+    int insequencenr = network->InSequenceNr;
+    int faketimeLimit = config->backtrack.timeLimit; if (faketimeLimit <= 200) { faketimeLimit = 0; }
+    else { faketimeLimit -= 200; }
+    float delta = max(0.f, std::clamp(faketimeLimit / 1000.f, 0.f, 0.2f) - network->getLatency(0));
+
+    Backtrack::AddLatencyToNetwork(network, delta + (delta / 20.0f));
+
+    int result = original(network, datagram);
+
+    network->InReliableState = instate;
+    network->InSequenceNr = insequencenr;
+
+    return result;
+}
+
 static bool __STDCALL createMove(LINUX_ARGS(void* thisptr,) float inputSampleTime, UserCmd* cmd) noexcept
 {
     auto result = hooks->clientMode.callOriginal<bool, IS_WIN32() ? 24 : 25>(inputSampleTime, cmd);
@@ -180,6 +202,18 @@ static bool __STDCALL createMove(LINUX_ARGS(void* thisptr,) float inputSampleTim
     Misc::slowwalk(cmd);
     Misc::sniperCrosshair();
     Misc::humanBunnyHop(cmd);
+
+    static void* oldPointer = nullptr;
+
+    auto network = interfaces->engine->getNetworkChannel();
+    if (oldPointer != network && network && localPlayer)
+    {
+        oldPointer = network;
+        Backtrack::UpdateIncomingSequences(true);
+        hooks->networkChannel.init(network);
+        hooks->networkChannel.hookAt(46, SendDatagram);
+    }
+    Backtrack::UpdateIncomingSequences();
 
 #ifdef _WIN32
     EnginePrediction::run(cmd);
