@@ -147,6 +147,7 @@ public:
         bool noShadows{ false };
         bool wireframeSmoke{ false };
         bool zoom{ false };
+        ColorToggleThickness drawAimbotFOV;
         KeyBindToggle zoomKey = KeyBind::NONE;
         bool thirdperson{ false };
         KeyBindToggle thirdpersonKey = KeyBind::NONE;

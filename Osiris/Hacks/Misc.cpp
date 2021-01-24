@@ -375,7 +375,7 @@ void Misc::drawBombTimer() noexcept
     }
 
     static float windowWidth = 200.0f;
-    ImGui::SetNextWindowPos({ (ImGui::GetIO().DisplaySize.x - 200.0f) / 2.0f, 60.0f }, ImGuiCond_Once);
+    ImGui::SetNextWindowPos({ (ImGui::GetIO().DisplaySize.x - 200.0f) / 2.0f, 120.0f }, ImGuiCond_Once);
     ImGui::SetNextWindowSize({ windowWidth, 0 }, ImGuiCond_Once);
 
     if (!gui->isOpen())
@@ -421,7 +421,7 @@ void Misc::drawBombTimer() noexcept
     ImGui::End();
 }
 
-void Misc::drawBombDamage() noexcept
+void Misc::drawBombDamage() noexcept //Not working
 {
     if (!config->misc.bombDamage) return;
 

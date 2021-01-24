@@ -361,6 +361,7 @@ static void from_json(const json& j, Config::Visuals& v)
     read(j, "Playermodel CT", v.playerModelCT);
     read<value_t::object>(j, "Color correction", v.colorCorrection);
     read<value_t::object>(j, "Bullet Tracers", v.bulletTracers);
+    read<value_t::object>(j, "Draw aimbot FOV", v.drawAimbotFOV);
 }
 
 static void from_json(const json& j, sticker_setting& s)
@@ -969,6 +970,7 @@ static void to_json(json& j, const Config::Visuals& o)
     WRITE("Playermodel CT", playerModelCT);
     WRITE("Color correction", colorCorrection);
     WRITE("Bullet Tracers", bulletTracers);
+    WRITE("Draw aimbot FOV", drawAimbotFOV);
 }
 
 static void to_json(json& j, const ImVec4& o)

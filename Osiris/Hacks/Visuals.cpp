@@ -499,6 +499,33 @@ void Visuals::bulletTracer(GameEvent& event) noexcept
     }
 }
 
+void Visuals::drawAimbotFOV(ImDrawList* drawList) noexcept
+{
+    if (!config->visuals.drawAimbotFOV.enabled)
+        return;
+
+    if (!localPlayer || !localPlayer->isAlive()) return;
+
+    const auto activeWeapon = localPlayer->getActiveWeapon();
+    if (!activeWeapon || !activeWeapon->clip())
+        return;
+
+    auto weaponIndex = getWeaponIndex(activeWeapon->itemDefinitionIndex2());
+    if (!weaponIndex)
+        return;
+
+    auto weaponClass = getWeaponClass(activeWeapon->itemDefinitionIndex2());
+    if (!config->aimbot[weaponIndex].enabled)
+        weaponIndex = weaponClass;
+
+    if (!config->aimbot[weaponIndex].enabled)
+        weaponIndex = 0;
+    const auto& screensize = ImGui::GetIO().DisplaySize;
+    float radius = std::tan(degreesToRadians(config->aimbot[weaponIndex].fov) / 2.f) / std::tan(degreesToRadians(localPlayer->isScoped() ? localPlayer->fov() : (105 + config->visuals.fov)) / 2.f) * screensize.x;
+    ImU32 color = Helpers::calculateColor(config->visuals.drawAimbotFOV);
+    drawList->AddCircleFilled({ screensize.x / 2.0f, screensize.y / 2.0f }, radius, color, 360);
+}
+
 void Visuals::updateInput() noexcept
 {
     config->visuals.thirdpersonKey.handleToggle();
