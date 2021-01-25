@@ -256,7 +256,6 @@ public:
         int banColor{ 6 };
         std::string banText{ "Cheater has been permanently banned from official CS:GO servers." };
         ColorToggle3 bombTimer{ 1.0f, 0.55f, 0.0f };
-        bool bombDamage{ false };
         KeyBind prepareRevolverKey = KeyBind::NONE;
         int hitSound{ 0 };
         float hitSoundVolume{ 1.0f };
