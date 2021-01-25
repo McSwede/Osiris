@@ -205,6 +205,7 @@ static bool __STDCALL createMove(LINUX_ARGS(void* thisptr,) float inputSampleTim
     Misc::slowwalk(cmd);
     Misc::sniperCrosshair();
 
+#ifdef _WIN32
     static void* oldPointer = nullptr;
 
     auto network = interfaces->engine->getNetworkChannel();
@@ -217,7 +218,6 @@ static bool __STDCALL createMove(LINUX_ARGS(void* thisptr,) float inputSampleTim
     }
     Backtrack::UpdateIncomingSequences();
 
-#ifdef _WIN32
     EnginePrediction::run(cmd);
 #endif
 
