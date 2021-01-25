@@ -9,7 +9,7 @@
 #include "../SDK/NetworkChannel.h"
 #include "../SDK/UserCmd.h"
 
-static std::deque<Backtrack::IncomingSequence>Backtrack::sequences;
+std::deque<Backtrack::IncomingSequence>Backtrack::sequences;
 static std::array<std::deque<Backtrack::Record>, 513> records;
 
 struct Cvars {
