@@ -1296,13 +1296,14 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::Checkbox("Anti AFK kick", &config->misc.antiAfkKick);
     ImGui::Checkbox("Auto strafe", &config->misc.autoStrafe);
     ImGui::Checkbox("Bunny hop", &config->misc.bunnyHop);
-    ImGui::Checkbox("Human Bunny hop", &config->misc.humanBunnyHop);
-    ImGui::SetNextItemWidth(100.0f);
-    ImGui::SliderInt("Bhop Hit Chance", &config->misc.bhop_hit_chance, 0, 100, "%d%");
-    ImGui::SetNextItemWidth(100.0f);
-    ImGui::InputInt("Bhop Restricted Limit", &config->misc.hops_restricted_limit);
-    ImGui::SetNextItemWidth(100.0f);
-    ImGui::InputInt("Max Hops Hit", &config->misc.max_hops_hit);
+    if (config->misc.bunnyHop) {
+        ImGui::SetNextItemWidth(100.0f);
+        ImGui::SliderInt("Bhop Hit Chance", &config->misc.bhop_hit_chance, 0, 100, "%d%");
+        ImGui::SetNextItemWidth(100.0f);
+        ImGui::InputInt("Max Hops Missed", &config->misc.hops_restricted_limit);
+        ImGui::SetNextItemWidth(100.0f);
+        ImGui::InputInt("Max Hops Hit", &config->misc.max_hops_hit);
+    }
     ImGui::Checkbox("Fast duck", &config->misc.fastDuck);
     ImGui::Checkbox("Moonwalk", &config->misc.moonwalk);
     ImGui::Checkbox("Edge Jump", &config->misc.edgejump);

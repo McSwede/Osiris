@@ -210,7 +210,6 @@ public:
         bool antiAfkKick{ false };
         bool autoStrafe{ false };
         bool bunnyHop{ false };
-        bool humanBunnyHop{ false };
         int bhop_hit_chance{ 100 };
         int hops_restricted_limit{ 1 };
         int max_hops_hit{ 5 };

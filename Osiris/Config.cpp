@@ -449,7 +449,6 @@ static void from_json(const json& j, Config::Misc& m)
     read(j, "Anti AFK kick", m.antiAfkKick);
     read(j, "Auto strafe", m.autoStrafe);
     read(j, "Bunny hop", m.bunnyHop);
-    read(j, "Human Bunny hop", m.humanBunnyHop);
     read(j, "Bhop Hit Chance", m.bhop_hit_chance);
     read(j, "Bhop Restricted Limit", m.hops_restricted_limit);
     read(j, "Max Hops Hit", m.max_hops_hit);
@@ -852,7 +851,6 @@ static void to_json(json& j, const Config::Misc& o)
     WRITE("Anti AFK kick", antiAfkKick);
     WRITE("Auto strafe", autoStrafe);
     WRITE("Bunny hop", bunnyHop);
-    WRITE("Human Bunny hop", humanBunnyHop);
     WRITE("Bhop Hit Chance", bhop_hit_chance);
     WRITE("Bhop Restricted Limit", hops_restricted_limit);
     WRITE("Max Hops Hit", max_hops_hit);

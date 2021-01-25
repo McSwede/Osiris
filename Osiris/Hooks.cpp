@@ -203,7 +203,6 @@ static bool __STDCALL createMove(LINUX_ARGS(void* thisptr,) float inputSampleTim
     Misc::fixTabletSignal();
     Misc::slowwalk(cmd);
     Misc::sniperCrosshair();
-    Misc::humanBunnyHop(cmd);
 
     static void* oldPointer = nullptr;
 
