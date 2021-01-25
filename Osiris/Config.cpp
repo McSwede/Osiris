@@ -60,7 +60,7 @@ Config::Config(const char* name) noexcept
     listConfigs();
     misc.clanTag[0] = '\0';
 
-    load(u8"default.json", false);
+    load(u8"Default", false);
 
 #ifdef _WIN32
     LOGFONTW logfont;
