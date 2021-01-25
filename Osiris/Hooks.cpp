@@ -140,7 +140,6 @@ static HRESULT __stdcall reset(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* 
     return hooks->originalReset(device, params);
 }
 
-#endif
 
 static int __fastcall SendDatagram(NetworkChannel* network, void* edx, void* datagram)
 {
@@ -164,6 +163,7 @@ static int __fastcall SendDatagram(NetworkChannel* network, void* edx, void* dat
 
     return result;
 }
+#endif
 
 static bool __STDCALL createMove(LINUX_ARGS(void* thisptr,) float inputSampleTime, UserCmd* cmd) noexcept
 {
