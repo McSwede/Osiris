@@ -1,3 +1,4 @@
+#ifdef _WIN32
 #include "AntiDetection.h"
 #include <Windows.h>
 
@@ -52,3 +53,4 @@ AntiDetection::AntiDetection() {
 	HideModule(hModule);
 	OutputDebugStringA("Cutup PEB link success.");
 }
+#endif

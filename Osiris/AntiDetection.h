@@ -1,3 +1,4 @@
+#ifdef _WIN32
 #include <memory>
 
 class AntiDetection
@@ -7,3 +8,4 @@ public:
 };
 
 inline std::unique_ptr<AntiDetection> antiDetection;
+#endif

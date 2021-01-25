@@ -30,8 +30,9 @@
 #include "Hooks.h"
 #include "Interfaces.h"
 #include "Memory.h"
+#ifdef _WIN32
 #include "AntiDetection.h"
-
+#endif
 #include "Hacks/Aimbot.h"
 #include "Hacks/AntiAim.h"
 #include "Hacks/Backtrack.h"
