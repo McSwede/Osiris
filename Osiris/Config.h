@@ -260,6 +260,7 @@ public:
         bool bombDamage{ false };
         KeyBind prepareRevolverKey = KeyBind::NONE;
         int hitSound{ 0 };
+        float hitSoundVolume{ 1.0f };
         int chokedPackets{ 0 };
         KeyBind chokedPacketsKey = KeyBind::NONE;
         int quickHealthshotKey{ 0 };

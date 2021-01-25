@@ -1387,6 +1387,8 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
             ImGui::SetTooltip("audio file must be put in csgo/sound/ directory");
     }
     ImGui::PopID();
+    if (config->misc.hitSound > 0 || config->misc.killSound > 0)
+        ImGui::SliderFloat("Hit/Kill volume", &config->misc.hitSoundVolume, 0.0f, 1.0f, "%.2f");
     ImGui::SetNextItemWidth(90.0f);
     ImGui::InputInt("Choked packets", &config->misc.chokedPackets, 1, 5);
     config->misc.chokedPackets = std::clamp(config->misc.chokedPackets, 0, 64);
