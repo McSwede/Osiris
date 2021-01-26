@@ -10,7 +10,9 @@
 #include "../GameData.h"
 #include "../Helpers.h"
 #include "../SDK/Engine.h"
+#include "../SDK/Entity.h"
 #include "../SDK/GlobalVars.h"
+#include "../SDK/LocalPlayer.h"
 #include "../Memory.h"
 
 #include <limits>
@@ -442,12 +444,13 @@ static void drawPlayerSkeleton(const ColorToggleThickness& config, const std::ve
 
 static bool renderPlayerEsp(const PlayerData& playerData, const Player& playerConfig) noexcept
 {
-    if (!playerConfig.enabled)
+    if (playerConfig.enabled || (playerConfig.deadEsp && !localPlayer->isAlive())) {
+        if (playerConfig.audibleOnly && !playerData.audible && !playerConfig.spottedOnly
+            || playerConfig.spottedOnly && !playerData.spotted && !(playerConfig.audibleOnly && playerData.audible)) // if both "Audible Only" and "Spotted Only" are on treat them as audible OR spotted
+            return true;
+    }
+    else
         return false;
-
-    if (playerConfig.audibleOnly && !playerData.audible && !playerConfig.spottedOnly
-        || playerConfig.spottedOnly && !playerData.spotted && !(playerConfig.audibleOnly && playerData.audible)) // if both "Audible Only" and "Spotted Only" are on treat them as audible OR spotted
-        return true;
 
     renderPlayerBox(playerData, playerConfig);
     drawPlayerSkeleton(playerConfig.skeleton, playerData.bones);

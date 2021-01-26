@@ -888,6 +888,7 @@ void GUI::renderStreamProofESPWindow(bool contentOnly) noexcept
         
             ImGui::SameLine(spacing);
             ImGui::Checkbox("Health Bar", &playerConfig.healthBar);
+            ImGui::Checkbox("Dead ESP", &playerConfig.deadEsp);
         } else if (currentCategory == 2) {
             auto& weaponConfig = config->streamProofESP.weapons[currentItem];
             ImGuiCustom::colorPicker("Ammo", weaponConfig.ammo);
