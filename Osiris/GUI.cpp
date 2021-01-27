@@ -1114,6 +1114,14 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
                             selected_entry.paint_kit_vector_index = i;
                             ImGui::CloseCurrentPopup();
                         }
+
+                        if (ImGui::IsItemHovered()) {
+                            if (const auto icon = SkinChanger::getItemIconTexture(kits[i].iconPath)) {
+                                ImGui::BeginTooltip();
+                                ImGui::Image(icon, { 200.0f, 150.0f });
+                                ImGui::EndTooltip();
+                            }
+                        }
                         if (selected && ImGui::IsWindowAppearing())
                             ImGui::SetScrollHereY();
                         ImGui::PopID();
@@ -1198,6 +1206,13 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
                         if (ImGui::SelectableWithBullet(kits[i].name.c_str(), rarityColor(kits[i].rarity), selected)) {
                             selected_sticker.kit_vector_index = i;
                             ImGui::CloseCurrentPopup();
+                        }
+                        if (ImGui::IsItemHovered()) {
+                            if (const auto icon = SkinChanger::getItemIconTexture(kits[i].iconPath)) {
+                                ImGui::BeginTooltip();
+                                ImGui::Image(icon, { 200.0f, 150.0f });
+                                ImGui::EndTooltip();
+                            }
                         }
                         if (selected && ImGui::IsWindowAppearing())
                             ImGui::SetScrollHereY();
