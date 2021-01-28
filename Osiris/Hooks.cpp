@@ -164,6 +164,16 @@ static int __fastcall SendDatagram(NetworkChannel* network, void* edx, void* dat
 
     return result;
 }
+
+static bool __fastcall SendNetMsg(void* networkchannel, void* edx, NetworkMessage& msg, bool bForceReliable, bool bVoice)
+{
+    auto original = hooks->networkChannel.getOriginal<bool, 40, NetworkMessage&, bool, bool>(msg, bForceReliable, bVoice);
+
+    if (msg.getType() == 14 && config->misc.svpurebypass) // Return and don't send messsage if its FileCRCCheck
+        return false;
+
+    return original(networkchannel, msg, bForceReliable, bVoice);
+}
 #endif
 
 static bool __STDCALL createMove(LINUX_ARGS(void* thisptr,) float inputSampleTime, UserCmd* cmd) noexcept
@@ -216,6 +226,7 @@ static bool __STDCALL createMove(LINUX_ARGS(void* thisptr,) float inputSampleTim
         Backtrack::UpdateIncomingSequences(true);
         hooks->networkChannel.init(network);
         hooks->networkChannel.hookAt(46, SendDatagram);
+        hooks->networkChannel.hookAt(40, SendNetMsg);
     }
     Backtrack::UpdateIncomingSequences();
 
