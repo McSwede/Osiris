@@ -123,7 +123,7 @@ void Chams::renderPlayer(Entity* player) noexcept
                 if (!appliedChams)
                     hooks->modelRender.callOriginal<void, 21>(ctx, state, info, customBoneToWorld);
                 if (config->backtrack.drawAllTicks) {
-                    for (int x = 0; x < record.size(); x++) {
+                    for (unsigned int x = 0; x < record.size(); x++) {
                         applyChams(config->chams["Backtrack"].materials, health, record.at(x).matrix);
                     }
                 }
