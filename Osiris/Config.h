@@ -234,8 +234,9 @@ public:
         bool fastStop{ false };
         bool quickReload{ false };
         bool prepareRevolver{ false };
-        bool oppositeHandKnife = false;
-        bool svpurebypass = false;
+        bool oppositeHandKnife{ false };
+        bool svpurebypass{ false };
+        bool spectatorList{ false };
         PreserveKillfeed preserveKillfeed;
         char clanTag[16];
         KeyBind edgejumpkey = KeyBind::NONE;
@@ -243,7 +244,6 @@ public:
         bool sniperCrosshair{ false };
         ColorToggleThickness noscopeCrosshair;
         ColorToggleThickness recoilCrosshair;
-        ColorToggle3 spectatorList;
         ColorToggle3 watermark;
         float aspectratio{ 0 };
         std::string killMessageString{ "Gotcha!" };

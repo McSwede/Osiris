@@ -466,7 +466,7 @@ static void from_json(const json& j, Config::Misc& m)
     read(j, "Reveal ranks", m.revealRanks);
     read(j, "Reveal money", m.revealMoney);
     read(j, "Reveal suspect", m.revealSuspect);
-    read<value_t::object>(j, "Spectator list", m.spectatorList);
+    read(j, "Spectator list", m.spectatorList);
     read<value_t::object>(j, "Watermark", m.watermark);
     read<value_t::object>(j, "Offscreen Enemies", m.offscreenEnemies);
     read(j, "Fix animation LOD", m.fixAnimationLOD);
