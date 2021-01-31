@@ -827,11 +827,8 @@ void Misc::purchaseList(GameEvent* event) noexcept
         if ((!interfaces->engine->isInGame() || freezeEnd != 0.0f && memory->globalVars->realtime > freezeEnd + (!config->misc.purchaseList.onlyDuringFreezeTime ? mp_buytime->getFloat() : 0.0f) || playerPurchases.empty() || purchaseTotal.empty()) && !gui->isOpen())
             return;
 
-        const auto [width, height] = interfaces->surface->getScreenSize();
-        float textPositionY = static_cast<float>(0.5f * height);
-
         ImGui::SetNextWindowSize({ 400.0f, 200.0f }, ImGuiCond_Once);
-        ImGui::SetNextWindowPos({ width - 400.0f, textPositionY - 400.0f }, ImGuiCond_Once);
+        ImGui::SetNextWindowPos({ ImGui::GetIO().DisplaySize.x - 400.0f, ImGui::GetIO().DisplaySize.y / 2 - 400.0f }, ImGuiCond_Once);
 
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse;
         if (!gui->isOpen())
