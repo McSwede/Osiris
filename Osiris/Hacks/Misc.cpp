@@ -36,6 +36,10 @@
 
 #include "../imguiCustom.h"
 
+#ifndef CP_UTF8
+#define CP_UTF8 65001
+#endif
+
 static bool edgejumpActive;
 
 void Misc::edgejump(UserCmd* cmd) noexcept
