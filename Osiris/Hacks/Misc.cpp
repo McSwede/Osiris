@@ -36,10 +36,6 @@
 
 #include "../imguiCustom.h"
 
-#ifndef CP_UTF8
-#define CP_UTF8 65001
-#endif
-
 static bool edgejumpActive;
 
 void Misc::edgejump(UserCmd* cmd) noexcept
@@ -171,12 +167,14 @@ void Misc::spectatorList() noexcept
             if (!interfaces->engine->getPlayerInfo(i, playerInfo))
                 continue;
 
+#ifdef _WIN32
             if (wchar_t name[128]; MultiByteToWideChar(CP_UTF8, 0, playerInfo.name, -1, name, 128))
             {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("%i. %ws", ImGui::TableGetRowIndex() + 1, name);
             }
+#endif
         }
         ImGui::EndTable();
     }
