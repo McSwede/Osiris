@@ -142,43 +142,46 @@ void Misc::spectatorList() noexcept
     if (!gui->isOpen())
         ImGui::SetNextWindowBgAlpha(0.3f);
 
+    int specs = 0;
+    std::string spect = "";
+    PlayerInfo playerInfo;
+
+    for (int i = 1; i <= interfaces->engine->getMaxClients(); ++i)
+    {
+        const auto entity = interfaces->entityList->getEntity(i);
+
+        if (!entity || entity->isDormant() || entity->isAlive())
+            continue;
+
+        if ((localPlayer->isAlive() && entity->getObserverTarget() != localPlayer.get()) || (!localPlayer->isAlive() && entity->getObserverTarget() != localPlayer->getObserverTarget()))
+            continue;
+   
+        if (!interfaces->engine->getPlayerInfo(i, playerInfo))
+            continue;
+
+        if (playerInfo.hltv)
+            continue;
+
+        specs++;
+        spect += playerInfo.name;
+        spect += "\n";
+    }
+
     static float windowWidth = 200.0f;
     ImGui::SetNextWindowPos({ ImGui::GetIO().DisplaySize.x - windowWidth, ImGui::GetIO().DisplaySize.y / 2.0f - 200.0f}, ImGuiCond_Once);
     ImGui::SetNextWindowSize({ windowWidth, 0.0f });
-
     ImGui::SetNextWindowSizeConstraints({ 0, -1 }, { FLT_MAX, -1 });
-    ImGui::Begin("Spectator List", nullptr, ImGuiWindowFlags_NoDecoration | (gui->isOpen() ? 0 : ImGuiWindowFlags_NoInputs));
-
-    ImGui::textUnformattedCentered("Spectators: ");
-
-    if (ImGui::BeginTable("##spec_table1", 1) && interfaces->engine->isInGame() && interfaces->engine->isConnected())
+    if (gui->isOpen() || (!gui->isOpen() && specs > 0))
     {
-        for (int i = 1; i <= interfaces->engine->getMaxClients(); ++i)
+        if (ImGui::Begin("Spectator List", nullptr, ImGuiWindowFlags_NoDecoration | (gui->isOpen() ? 0 : ImGuiWindowFlags_NoInputs)))
         {
-            const auto entity = interfaces->entityList->getEntity(i);
+            ImGui::textUnformattedCentered("Spectators: ");
 
-            if (!entity || entity->isDormant() || entity->isAlive())
-                continue;
-
-            if ((localPlayer->isAlive() && entity->getObserverTarget() != localPlayer.get()) || (!localPlayer->isAlive() && entity->getObserverTarget() != localPlayer->getObserverTarget()))
-                continue;
-
-            PlayerInfo playerInfo;
-            if (!interfaces->engine->getPlayerInfo(i, playerInfo))
-                continue;
-
-#ifdef _WIN32
-            if (wchar_t name[128]; MultiByteToWideChar(CP_UTF8, 0, playerInfo.name, -1, name, 128))
-            {
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
-                ImGui::Text("%i. %ws", ImGui::TableGetRowIndex() + 1, name);
-            }
-#endif
+            if (specs > 0) spect += "\n";
+            ImGui::Text(spect.c_str());
         }
-        ImGui::EndTable();
+        ImGui::End();
     }
-    ImGui::End();
 }
 
 void Misc::sniperCrosshair() noexcept
