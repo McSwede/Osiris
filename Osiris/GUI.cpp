@@ -27,6 +27,7 @@
 #include "Hacks/Visuals.h"
 #include "Hacks/Glow.h"
 #include "Hacks/AntiAim.h"
+#include "Hacks/Backtrack.h"
 
 constexpr auto windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize
 | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
@@ -77,7 +78,7 @@ void GUI::render() noexcept
         renderAimbotWindow();
         AntiAim::drawGUI(false);
         renderTriggerbotWindow();
-        renderBacktrackWindow();
+        Backtrack::drawGUI(false);
         Glow::drawGUI(false);
         renderChamsWindow();
         renderStreamProofESPWindow();
@@ -153,7 +154,7 @@ void GUI::renderMenuBar() noexcept
         menuBarItem("Aimbot", window.aimbot);
         AntiAim::menuBarItem();
         menuBarItem("Triggerbot", window.triggerbot);
-        menuBarItem("Backtrack", window.backtrack);
+        Backtrack::menuBarItem();
         Glow::menuBarItem();
         menuBarItem("Chams", window.chams);
         menuBarItem("ESP", window.streamProofESP);
@@ -442,37 +443,6 @@ void GUI::renderTriggerbotWindow(bool contentOnly) noexcept
     ImGui::SliderFloat("Max aim inaccuracy", &config->triggerbot[currentWeapon].maxAimInaccuracy, 0.0f, 1.0f, "%.5f", ImGuiSliderFlags_Logarithmic);
     ImGui::SliderFloat("Max shot inaccuracy", &config->triggerbot[currentWeapon].maxShotInaccuracy, 0.0f, 1.0f, "%.5f", ImGuiSliderFlags_Logarithmic);
 
-    if (!contentOnly)
-        ImGui::End();
-}
-
-void GUI::renderBacktrackWindow(bool contentOnly) noexcept
-{
-    if (!contentOnly) {
-        if (!window.backtrack)
-            return;
-        ImGui::SetNextWindowSize({ 0.0f, 0.0f });
-        ImGui::Begin("Backtrack", &window.backtrack, windowFlags);
-    }
-    ImGui::Checkbox("Enabled", &config->backtrack.enabled);
-    ImGui::SameLine();
-    ImGui::Checkbox("Extend with fake ping", &config->backtrack.fakeLatency);
-    ImGui::Checkbox("Ignore smoke", &config->backtrack.ignoreSmoke);
-    ImGui::SameLine();
-    ImGui::Checkbox("Recoil based fov", &config->backtrack.recoilBasedFov);
-    ImGui::Checkbox("Chams draw ticks", &config->backtrack.drawAllTicks);
-    ImGui::SameLine();
-    ImGui::Checkbox("Ping based", &config->backtrack.pingBased);
-    if (config->backtrack.pingBased) {
-        ImGui::SameLine();
-        ImGui::Text("(%d ms)", config->backtrack.pingBasedVal);
-    }
-    else {
-        if (!config->backtrack.fakeLatency) { if (config->backtrack.timeLimit >= 201) { config->backtrack.timeLimit = 200; } }
-        ImGui::PushItemWidth(220.0f); ImGui::PushID(0);
-        ImGui::SliderInt("", &config->backtrack.timeLimit, 1, config->backtrack.fakeLatency ? 400 : 200, "Time limit %d ms");
-        ImGui::PopID();
-    }
     if (!contentOnly)
         ImGui::End();
 }
@@ -1544,7 +1514,7 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
                     case 0: config->reset(); updateColors(); Misc::updateClanTag(true); SkinChanger::scheduleHudUpdate(); break;
                     case 1: config->aimbot = { }; break;
                     case 2: config->triggerbot = { }; break;
-                    case 3: config->backtrack = { }; break;
+                    case 3: Backtrack::resetConfig(); break;
                     case 4: AntiAim::resetConfig(); break;
                     case 5: Glow::resetConfig(); break;
                     case 6: config->chams = { }; break;
@@ -1623,10 +1593,7 @@ void GUI::renderGuiStyle2() noexcept
             renderTriggerbotWindow(true);
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Backtrack")) {
-            renderBacktrackWindow(true);
-            ImGui::EndTabItem();
-        }
+        Backtrack::tabItem();
         Glow::tabItem();
         if (ImGui::BeginTabItem("Chams")) {
             renderChamsWindow(true);

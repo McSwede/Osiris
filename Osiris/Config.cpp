@@ -10,6 +10,7 @@
 #include "Helpers.h"
 #include "SDK/Platform.h"
 #include "Hacks/AntiAim.h"
+#include "Hacks/Backtrack.h"
 #include "Hacks/Glow.h"
 
 #ifdef _WIN32
@@ -259,18 +260,6 @@ static void from_json(const json& j, Config::Triggerbot& t)
     read(j, "Burst Time", t.burstTime);
     read(j, "Max aim inaccuracy", t.maxAimInaccuracy);
     read(j, "Max shot inaccuracy", t.maxShotInaccuracy);
-}
-
-static void from_json(const json& j, Config::Backtrack& b)
-{
-    read(j, "Enabled", b.enabled);
-    read(j, "Ignore smoke", b.ignoreSmoke);
-    read(j, "Recoil based fov", b.recoilBasedFov);
-    read(j, "Time limit", b.timeLimit);
-    read(j, "Ping based value", b.pingBasedVal);
-    read(j, "Ping based", b.pingBased);
-    read(j, "Fake Latency", b.fakeLatency);
-    read(j, "Draw all ticks", b.drawAllTicks);
 }
 
 static void from_json(const json& j, Config::Chams::Material& m)
@@ -547,9 +536,9 @@ void Config::load(const char8_t* name, bool incremental) noexcept
     read(j, "Triggerbot", triggerbot);
     read(j, "Triggerbot Key", triggerbotHoldKey);
 
-    read<value_t::object>(j, "Backtrack", backtrack);
-    ::AntiAim::fromJson(j["Anti aim"]);
-    ::Glow::fromJson(j["Glow"]);
+    AntiAim::fromJson(j["Anti aim"]);
+    Backtrack::fromJson(j["Backtrack"]);
+    Glow::fromJson(j["Glow"]);
     read(j, "Chams", chams);
     read<value_t::object>(j, "ESP", streamProofESP);
     read<value_t::object>(j, "Visuals", visuals);
@@ -727,18 +716,6 @@ static void to_json(json& j, const Config::Triggerbot& o, const Config::Triggerb
     WRITE("Burst Time", burstTime);
     WRITE("Max aim inaccuracy", maxAimInaccuracy);
     WRITE("Max shot inaccuracy", maxShotInaccuracy);
-}
-
-static void to_json(json& j, const Config::Backtrack& o, const Config::Backtrack& dummy = {})
-{
-    WRITE("Enabled", enabled);
-    WRITE("Ignore smoke", ignoreSmoke);
-    WRITE("Recoil based fov", recoilBasedFov);
-    WRITE("Time limit", timeLimit);
-    WRITE("Ping based value", pingBasedVal);
-    WRITE("Ping based", pingBased);
-    WRITE("Fake Latency", fakeLatency);
-    WRITE("Draw all ticks", drawAllTicks);
 }
 
 static void to_json(json& j, const Config::Chams::Material& o)
@@ -1039,9 +1016,9 @@ void Config::save(size_t id) const noexcept
         j["Triggerbot"] = triggerbot;
         to_json(j["Triggerbot Key"], triggerbotHoldKey, KeyBind::NONE);
 
-        j["Backtrack"] = backtrack;
-        j["Anti aim"] = ::AntiAim::toJson();
-        j["Glow"] = ::Glow::toJson();
+        j["Backtrack"] = Backtrack::toJson();
+        j["Anti aim"] = AntiAim::toJson();
+        j["Glow"] = Glow::toJson();
         j["Chams"] = chams;
         j["ESP"] = streamProofESP;
         j["Sound"] = sound;
@@ -1080,8 +1057,9 @@ void Config::rename(size_t item, const char* newName) noexcept
 void Config::reset() noexcept
 {
     aimbot = { };
+    AntiAim::resetConfig();
     triggerbot = { };
-    backtrack = { };
+    Backtrack::resetConfig();
     Glow::resetConfig();
     chams = { };
     streamProofESP = { };
