@@ -832,6 +832,15 @@ void Misc::purchaseList(GameEvent* event) noexcept
         if ((!interfaces->engine->isInGame() || freezeEnd != 0.0f && memory->globalVars->realtime > freezeEnd + (!config->misc.purchaseList.onlyDuringFreezeTime ? mp_buytime->getFloat() : 0.0f) || playerPurchases.empty() || purchaseTotal.empty()) && !gui->isOpen())
             return;
 
+        ConVar* gametype = interfaces->cvar->findVar("game_type");
+        switch (gametype->getInt())
+        {
+        case 1:
+        case 5:
+        case 6:
+            return;
+        }
+
         ImGui::SetNextWindowSize({ 400.0f, 200.0f }, ImGuiCond_Once);
         ImGui::SetNextWindowPos({ ImGui::GetIO().DisplaySize.x - 400.0f, ImGui::GetIO().DisplaySize.y / 2 - 400.0f }, ImGuiCond_Once);
 
