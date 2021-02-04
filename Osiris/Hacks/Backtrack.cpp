@@ -23,7 +23,6 @@ struct Cvars {
     ConVar* maxInterpRatio;
     ConVar* maxUnlag;
 };
-
 static Cvars cvars;
 
 static auto timeToTicks(float time) noexcept
@@ -216,11 +215,6 @@ void Backtrack::UpdateIncomingSequences(bool reset) noexcept
         sequences.pop_back();
 }
 
-int Backtrack::timeToTicks(float time) noexcept
-{
-    return static_cast<int>(0.5f + time / memory->globalVars->intervalPerTick);
-}
-
 void Backtrack::init() noexcept
 {
     cvars.updateRate = interfaces->cvar->findVar("cl_updaterate");
@@ -329,9 +323,12 @@ namespace Backtrack
 {
     void update(FrameStage) noexcept {}
     void run(UserCmd*) noexcept {}
+    void AddLatencyToNetwork(NetworkChannel*, float) noexcept {}
+    void UpdateIncomingSequences(bool reset = false) noexcept {}
 
     const std::deque<Record>* getRecords(std::size_t index) noexcept { return nullptr; }
     bool valid(float simtime) noexcept { return false; }
+    float getExtraTicks() noexcept {}
     void init() noexcept {}
 
     // GUI

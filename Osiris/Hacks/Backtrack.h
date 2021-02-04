@@ -50,7 +50,6 @@ namespace Backtrack
     extern std::deque<IncomingSequence>sequences;
 
     float getExtraTicks() noexcept;
-    int timeToTicks(float time) noexcept;
     void init() noexcept;
 
     // GUI
