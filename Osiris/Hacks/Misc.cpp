@@ -162,6 +162,9 @@ void Misc::spectatorList() noexcept
         if (playerInfo.hltv)
             continue;
 
+        if (entity->getObserverMode() != ObsMode::InEye)
+            continue;
+
         specs++;
         spect += playerInfo.name;
         spect += "\n";
