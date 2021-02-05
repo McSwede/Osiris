@@ -119,6 +119,8 @@ static HRESULT __stdcall present(IDirect3DDevice9* device, const RECT* src, cons
     StreamProofESP::updateInput();
     Misc::updateInput();
     Triggerbot::updateInput();
+    Chams::updateInput();
+    Glow::updateInput();
 
     gui->handleToggle();
 
@@ -601,6 +603,8 @@ static void swapWindow(SDL_Window* window) noexcept
         StreamProofESP::updateInput();
         Misc::updateInput();
         Triggerbot::updateInput();
+        Chams::updateInput();
+        Glow::updateInput();
 
         gui->handleToggle();
 

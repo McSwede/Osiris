@@ -93,6 +93,8 @@ public:
     };
 
     std::unordered_map<std::string, Chams> chams;
+    KeyBindToggle chamsToggleKey = KeyBind::NONE;
+    KeyBind chamsHoldKey = KeyBind::NONE;
 
     struct StreamProofESP {
         KeyBindToggle toggleKey = KeyBind::NONE;

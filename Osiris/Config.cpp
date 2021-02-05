@@ -540,6 +540,8 @@ void Config::load(const char8_t* name, bool incremental) noexcept
     Backtrack::fromJson(j["Backtrack"]);
     Glow::fromJson(j["Glow"]);
     read(j, "Chams", chams);
+    read(j["Chams"], "Toggle Key", chamsToggleKey);
+    read(j["Chams"], "Hold Key", chamsHoldKey);
     read<value_t::object>(j, "ESP", streamProofESP);
     read<value_t::object>(j, "Visuals", visuals);
     read(j, "Skin changer", skinChanger);
@@ -735,18 +737,6 @@ static void to_json(json& j, const Config::Chams::Material& o)
 static void to_json(json& j, const Config::Chams& o)
 {
     j["Materials"] = o.materials;
-}
-
-static void to_json(json& j, const KeyBind& o, const KeyBind& dummy)
-{
-    if (o != dummy)
-        j = o.toString();
-}
-
-static void to_json(json& j, const KeyBindToggle& o, const KeyBindToggle& dummy)
-{
-    if (o != dummy)
-        j = o.toString();
 }
 
 static void to_json(json& j, const Config::StreamProofESP& o, const Config::StreamProofESP& dummy = {})
@@ -1020,6 +1010,8 @@ void Config::save(size_t id) const noexcept
         j["Anti aim"] = AntiAim::toJson();
         j["Glow"] = Glow::toJson();
         j["Chams"] = chams;
+        to_json(j["Chams"]["Toggle Key"], chamsToggleKey, KeyBind::NONE);
+        to_json(j["Chams"]["Hold Key"], chamsHoldKey, KeyBind::NONE);
         j["ESP"] = streamProofESP;
         j["Sound"] = sound;
         j["Visuals"] = visuals;
