@@ -38,7 +38,6 @@ public:
 	int bits;
 	uint8_t* data;
 	int flags;
-	PAD(0x1C);
 	EventInfo* m_next;
 
 };
@@ -86,10 +85,4 @@ public:
 	Vector			angViewPoint;
 	std::byte		pad9[0xD0];
 	EventInfo* pEvents;
-};
-
-class NetworkMessage
-{
-public:
-    VIRTUAL_METHOD(int, getType, 7, (), (this))
 };

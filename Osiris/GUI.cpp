@@ -1280,7 +1280,7 @@ void GUI::renderProfileChangerWindow(bool contentOnly) noexcept
     ImGui::Text("Fake ban type");
     ImGui::Combo("##fake-ban", &config->profileChanger.ban_type, bans_gui, IM_ARRAYSIZE(bans_gui));
     ImGui::Text("Fake ban time");
-    ImGui::SliderInt("##fake-ban-time", &config->profileChanger.ban_time, 0, 1000, "Seconds: %d");
+    ImGui::InputInt("##fake-ban-time", &config->profileChanger.ban_time);
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (250 / 2) - (190 / 2) - 20.f);
     if (ImGui::Button("Apply", ImVec2(190, 30)))
     {
