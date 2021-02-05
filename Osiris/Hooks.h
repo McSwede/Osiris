@@ -14,6 +14,8 @@ union SDL_Event;
 #include "Hooks/MinHook.h"
 #include "Hooks/VmtHook.h"
 #include "Hooks/VmtSwap.h"
+#include "Hooks/vfunc_hook.hpp"
+#include "SDK/SteamAPI.h"
 
 #include "SDK/Platform.h"
 
@@ -55,6 +57,7 @@ public:
     HookType sound;
     HookType surface;
     HookType viewRender;
+    vfunc_hook gameCoordinator;
     HookType svCheats;
     VmtSwap networkChannel;
 private:
