@@ -28,7 +28,7 @@
 #include "Hacks/Glow.h"
 #include "Hacks/AntiAim.h"
 #include "Hacks/Backtrack.h"
-#include "Protobuffs/Protobuffs.h"
+#include "Hacks/ProfileChanger.h"
 
 constexpr auto windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize
 | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
@@ -85,7 +85,7 @@ void GUI::render() noexcept
         renderStreamProofESPWindow();
         renderVisualsWindow();
         renderSkinChangerWindow();
-        renderProfileChangerWindow();
+        ProfileChanger::drawGUI(false);
         renderSoundWindow();
         renderStyleWindow();
         renderMiscWindow();
@@ -162,7 +162,7 @@ void GUI::renderMenuBar() noexcept
         menuBarItem("ESP", window.streamProofESP);
         menuBarItem("Visuals", window.visuals);
         menuBarItem("Skin changer", window.skinChanger);
-        menuBarItem("Profile changer", window.profileChanger);
+        ProfileChanger::menuBarItem();
         menuBarItem("Sound", window.sound);
         menuBarItem("Style", window.style);
         menuBarItem("Misc", window.misc);
@@ -1208,90 +1208,6 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
         ImGui::End();
 }
 
-void GUI::renderProfileChangerWindow(bool contentOnly) noexcept
-{
-    if (!contentOnly) {
-        if (!window.profileChanger)
-            return;
-        ImGui::SetNextWindowSize({ 290.0f, 0.0f });
-        ImGui::Begin("Profile Changer", &window.profileChanger, windowFlags);
-    }
-
-    static const char* bans_gui[] =
-    {
-        "Off",
-        "You were kicked from the last match (competitive cooldown)",
-        "You killed too many teammates (competitive cooldown)",
-        "You killed a teammate at round start (competitive cooldown)",
-        "You failed to reconnect to the last match (competitive cooldown)",
-        "You abandoned the last match (competitive cooldown)",
-        "You did too much damage to your teammates (competitive cooldown)",
-        "You did too much damage to your teammates at round start (competitive cooldown)",
-        "This account is permanently untrusted (global cooldown)",
-        "You were kicked from too many recent matches (competitive cooldown)",
-        "Convicted by overwatch - majorly disruptive (global cooldown)",
-        "Convicted by overwatch - minorly disruptive (global cooldown)",
-        "Resolving matchmaking state for your account (temporary cooldown)",
-        "Resolving matchmaking state after the last match (temporary cooldown)",
-        "This account is permanently untrusted (global cooldown)",
-        "(global cooldown)",
-        "You failed to connect by match start. (competitive cooldown)",
-        "You have kicked too many teammates in recent matches (competitive cooldown)",
-        "Congratulations on your recent competitive wins! before you play competitive matches further please wait for matchmaking servers to calibrate your skill group placement based on your lastest performance. (temporary cooldown)",
-        "A server using your game server login token has been banned. your account is now permanently banned from operating game servers, and you have a cooldown from connecting to game servers. (global cooldown)"
-    };
-    const char* ranks_gui[] = {
-        "Off",
-        "Silver 1",
-        "Silver 2",
-        "Silver 3",
-        "Silver 4",
-        "Silver elite",
-        "Silver elite master",
-        "Gold nova 1",
-        "Gold nova 2",
-        "Gold nova 3",
-        "Gold nova master",
-        "Master guardian 1",
-        "Master guardian 2",
-        "Master guardian elite",
-        "Distinguished master guardian",
-        "Legendary eagle",
-        "Legendary eagle master",
-        "Supreme master first class",
-        "The global elite"
-    };
-
-    ImGui::Checkbox("Enabled##profile", &config->profileChanger.enabled);
-    ImGui::Text("Rank");
-    ImGui::Combo("##Rank", &config->profileChanger.rank, ranks_gui, ARRAYSIZE(ranks_gui));
-    ImGui::Text("Level");
-    ImGui::SliderInt("##Level", &config->profileChanger.level, 0, 40);
-    ImGui::Text("XP");
-    ImGui::InputInt("##Xp##level", &config->profileChanger.exp);
-    ImGui::Text("Wins");
-    ImGui::InputInt("##Wins", &config->profileChanger.wins);
-    ImGui::Text("Friend");
-    ImGui::InputInt("##Friend", &config->profileChanger.friendly);
-    ImGui::Text("Teach");
-    ImGui::InputInt("##Teach", &config->profileChanger.teach);
-    ImGui::Text("Leader");
-    ImGui::InputInt("##Leader", &config->profileChanger.leader);
-    ImGui::Text("Fake ban type");
-    ImGui::Combo("##fake-ban", &config->profileChanger.ban_type, bans_gui, IM_ARRAYSIZE(bans_gui));
-    ImGui::Text("Fake ban time");
-    ImGui::InputInt("##fake-ban-time", &config->profileChanger.ban_time);
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (250 / 2) - (190 / 2) - 20.f);
-    if (ImGui::Button("Apply", ImVec2(190, 30)))
-    {
-        write.SendClientHello();
-        write.SendMatchmakingClient2GCHello();
-    }
-
-    if (!contentOnly)
-        ImGui::End();
-}
-
 void GUI::renderSoundWindow(bool contentOnly) noexcept
 {
     if (!contentOnly) {
@@ -1613,9 +1529,10 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
                     case 7: config->streamProofESP = { }; break;
                     case 8: config->visuals = { }; break;
                     case 9: config->skinChanger = { }; SkinChanger::scheduleHudUpdate(); break;
-                    case 10: config->sound = { }; break;
-                    case 11: config->style = { }; updateColors(); break;
-                    case 12: config->misc = { };  Misc::updateClanTag(true); break;
+                    case 10: ProfileChanger::resetConfig(); ProfileChanger::Apply(); break;
+                    case 11: config->sound = { }; break;
+                    case 12: config->style = { }; updateColors(); break;
+                    case 13: config->misc = { };  Misc::updateClanTag(true); break;
                     }
                 }
             }
@@ -1634,6 +1551,7 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
                             updateColors();
                             SkinChanger::scheduleHudUpdate();
                             Misc::updateClanTag(true);
+                            ProfileChanger::Apply();
                         }
 
                 ImGui::EndPopup();
@@ -1703,10 +1621,7 @@ void GUI::renderGuiStyle2() noexcept
             renderSkinChangerWindow(true);
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Profile changer")) {
-            renderProfileChangerWindow(true);
-            ImGui::EndTabItem();
-        }
+        ProfileChanger::tabItem();
         if (ImGui::BeginTabItem("Sound")) {
             renderSoundWindow(true);
             ImGui::EndTabItem();

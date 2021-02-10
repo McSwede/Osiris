@@ -12,6 +12,7 @@
 #include "Hacks/AntiAim.h"
 #include "Hacks/Backtrack.h"
 #include "Hacks/Glow.h"
+#include "Hacks/ProfileChanger.h"
 
 #ifdef _WIN32
 int CALLBACK fontCallback(const LOGFONTW* lpelfe, const TEXTMETRICW*, DWORD, LPARAM lParam)
@@ -539,6 +540,7 @@ void Config::load(const char8_t* name, bool incremental) noexcept
     AntiAim::fromJson(j["Anti aim"]);
     Backtrack::fromJson(j["Backtrack"]);
     Glow::fromJson(j["Glow"]);
+    ProfileChanger::fromJson(j["Profile Changer"]);
     read(j, "Chams", chams);
     read(j["Chams"], "Toggle Key", chamsToggleKey);
     read(j["Chams"], "Hold Key", chamsHoldKey);
@@ -1009,6 +1011,7 @@ void Config::save(size_t id) const noexcept
         j["Backtrack"] = Backtrack::toJson();
         j["Anti aim"] = AntiAim::toJson();
         j["Glow"] = Glow::toJson();
+        j["Profile Changer"] = ProfileChanger::toJson();
         j["Chams"] = chams;
         to_json(j["Chams"]["Toggle Key"], chamsToggleKey, KeyBind::NONE);
         to_json(j["Chams"]["Hold Key"], chamsHoldKey, KeyBind::NONE);
