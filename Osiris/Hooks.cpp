@@ -521,12 +521,10 @@ static const DemoPlaybackParameters* __STDCALL getDemoPlaybackParameters(LINUX_A
     return params;
 }
 
-using GCRetrieveMessage = EGCResult(__thiscall*)(void*, uint32_t* punMsgType, void* pubDest, uint32_t cubDest, uint32_t* pcubMsgSize);
-using GCSendMessage = EGCResult(__thiscall*)(void*, uint32_t unMsgType, const void* pubData, uint32_t cubData);
 EGCResult __fastcall hkGCRetrieveMessage(void* ecx, void*, uint32_t* punMsgType, void* pubDest, uint32_t cubDest, uint32_t* pcubMsgSize)
 {
 
-    static auto oGCRetrieveMessage = hooks->gameCoordinator.get_original<GCRetrieveMessage>(2);
+    static auto oGCRetrieveMessage = hooks->gameCoordinator.getOriginal<EGCResult, 2>(punMsgType, pubDest, cubDest, pcubMsgSize);
     auto status = oGCRetrieveMessage(ecx, punMsgType, pubDest, cubDest, pcubMsgSize);
 
     if (status == k_EGCResultOK)
@@ -544,7 +542,7 @@ EGCResult __fastcall hkGCRetrieveMessage(void* ecx, void*, uint32_t* punMsgType,
 
 EGCResult __fastcall hkGCSendMessage(void* ecx, void*, uint32_t unMsgType, const void* pubData, uint32_t cubData)
 {
-    static auto oGCSendMessage = hooks->gameCoordinator.get_original<GCSendMessage>(0);
+    static auto oGCSendMessage = hooks->gameCoordinator.getOriginal<EGCResult, 0>(unMsgType, pubData, cubData);
     bool sendMessage = write.PreSendMessage(unMsgType, const_cast<void*>(pubData), cubData);
 
     if (!sendMessage)
@@ -710,9 +708,9 @@ void Hooks::install() noexcept
     viewRender.init(memory->viewRender);
     viewRender.hookAt(IS_WIN32() ? 39 : 40, render2dEffectsPreHud);
     viewRender.hookAt(IS_WIN32() ? 41 : 42, renderSmokeOverlay);
-    gameCoordinator.setup(memory->SteamGameCoordinator);
-    gameCoordinator.hook_index(2, hkGCRetrieveMessage);
-    gameCoordinator.hook_index(0, hkGCSendMessage);
+    gameCoordinator.init(memory->SteamGameCoordinator);
+    gameCoordinator.hookAt(2, hkGCRetrieveMessage);
+    gameCoordinator.hookAt(0, hkGCSendMessage);
 
 #ifdef _WIN32
     if (DWORD oldProtection; VirtualProtect(memory->dispatchSound, 4, PAGE_EXECUTE_READWRITE, &oldProtection)) {
@@ -781,7 +779,7 @@ void Hooks::uninstall() noexcept
     svCheats.restore();
     viewRender.restore();
     networkChannel.restore();
-    gameCoordinator.unhook_all();
+    gameCoordinator.restore();
 
     netvars->restore();
 
