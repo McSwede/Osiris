@@ -1,8 +1,8 @@
 #pragma once
-#include "../ProfileChanger/ProtoWriter.h"
-#include "../ProfileChanger/Messages.h"
+#include "../Protobuffs/ProtoWriter.h"
+#include "../Protobuffs/Messages.h"
 #include "../SDK/SteamAPI.h"
-#include "../ProfileChanger/Protobuffs.h"
+#include "../Protobuffs/Protobuffs.h"
 #include "../Config.h"
 #include "../Memory.h"
 #include "../Interfaces.h"

@@ -28,7 +28,7 @@
 #include "Hacks/Glow.h"
 #include "Hacks/AntiAim.h"
 #include "Hacks/Backtrack.h"
-#include "ProfileChanger/Protobuffs.h"
+#include "Protobuffs/Protobuffs.h"
 
 constexpr auto windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize
 | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
@@ -1287,8 +1287,6 @@ void GUI::renderProfileChangerWindow(bool contentOnly) noexcept
         write.SendClientHello();
         write.SendMatchmakingClient2GCHello();
     }
-
-
 
     if (!contentOnly)
         ImGui::End();

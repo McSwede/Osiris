@@ -28,7 +28,6 @@
     <ClCompile Include="Hacks\Visuals.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="Hooks\MinHook.cpp" />
-    <ClCompile Include="Hooks\vfunc_hook.cpp" />
     <ClCompile Include="Hooks\VmtHook.cpp" />
     <ClCompile Include="Hooks\VmtSwap.cpp" />
     <ClCompile Include="imguiCustom.cpp" />
@@ -52,8 +51,8 @@
     <ClCompile Include="imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="Memory.cpp" />
-    <ClCompile Include="ProfileChanger\Protobuffs.cpp" />
-    <ClCompile Include="ProfileChanger\valve_parser.cpp" />
+    <ClCompile Include="Protobuffs\Protobuffs.cpp" />
+    <ClCompile Include="Protobuffs\valve_parser.cpp" />
     <ClCompile Include="SDK\Entity.cpp" />
     <ClCompile Include="SDK\GlobalVars.cpp" />
     <ClCompile Include="SDK\KeyValues.cpp" />
@@ -80,7 +79,6 @@
     <ClInclude Include="Hacks\Visuals.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="Hooks\MinHook.h" />
-    <ClInclude Include="Hooks\vfunc_hook.hpp" />
     <ClInclude Include="Hooks\VmtHook.h" />
     <ClInclude Include="Hooks\VmtSwap.h" />
     <ClInclude Include="imguiCustom.h" />
@@ -97,12 +95,12 @@
     <ClInclude Include="MinHook\trampoline.h" />
     <ClInclude Include="Netvars.h" />
     <ClInclude Include="nlohmann\json.hpp" />
-    <ClInclude Include="ProfileChanger\Enums.hpp" />
-    <ClInclude Include="ProfileChanger\Messages.h" />
-    <ClInclude Include="ProfileChanger\Protobuffs.h" />
-    <ClInclude Include="ProfileChanger\ProtoField.h" />
-    <ClInclude Include="ProfileChanger\ProtoWriter.h" />
-    <ClInclude Include="ProfileChanger\valve_parser.h" />
+    <ClInclude Include="Protobuffs\Enums.h" />
+    <ClInclude Include="Protobuffs\Messages.h" />
+    <ClInclude Include="Protobuffs\Protobuffs.h" />
+    <ClInclude Include="Protobuffs\ProtoField.h" />
+    <ClInclude Include="Protobuffs\ProtoWriter.h" />
+    <ClInclude Include="Protobuffs\valve_parser.h" />
     <ClInclude Include="SDK\AnimState.h" />
     <ClInclude Include="SDK\Client.h" />
     <ClInclude Include="SDK\ConVar.h" />
