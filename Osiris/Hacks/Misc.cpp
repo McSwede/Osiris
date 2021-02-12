@@ -52,7 +52,7 @@ void Misc::edgejump(UserCmd* cmd) noexcept
     if ((EnginePrediction::getFlags() & 1) && !(localPlayer->flags() & 1))
         cmd->buttons |= UserCmd::IN_JUMP;
 
-    if (!(localPlayer->flags() & 1))
+    if (!(localPlayer->flags() & 1) && config->misc.edgejumpcrouch)
         cmd->buttons |= UserCmd::IN_DUCK;
 }
 

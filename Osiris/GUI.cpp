@@ -1299,14 +1299,25 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::Checkbox("Fast duck", &config->misc.fastDuck);
     ImGui::Checkbox("Moonwalk", &config->misc.moonwalk);
     ImGui::Checkbox("Edge Jump", &config->misc.edgejump);
+    ImGui::PushID("Edge Jump");
     ImGui::SameLine();
     ImGui::PushID("Edge Jump Key");
-    hotkey2("", config->misc.edgejumpkey);
+    hotkey2("", config->misc.edgejumpkey, 0.f, { 75.0f, 0.0f });
+    ImGui::PopID();
+    ImGui::SameLine();
+
+    if (ImGui::Button("..."))
+        ImGui::OpenPopup("");
+
+    if (ImGui::BeginPopup("")) {
+        ImGui::Checkbox("Crouch in air", &config->misc.edgejumpcrouch);
+        ImGui::EndPopup();
+    }
     ImGui::PopID();
     ImGui::Checkbox("Slowwalk", &config->misc.slowwalk);
     ImGui::SameLine();
     ImGui::PushID("Slowwalk Key");
-    hotkey2("", config->misc.slowwalkKey);
+    hotkey2("", config->misc.slowwalkKey, 0.f, { 75.0f, 0.0f });
     ImGui::PopID();
     ImGui::Checkbox("Sniper crosshair", &config->misc.sniperCrosshair);
     ImGuiCustom::colorPicker("Noscope crosshair", config->misc.noscopeCrosshair);

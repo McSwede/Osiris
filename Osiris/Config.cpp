@@ -443,6 +443,7 @@ static void from_json(const json& j, Config::Misc& m)
     read(j, "Fast duck", m.fastDuck);
     read(j, "Moonwalk", m.moonwalk);
     read(j, "Edge Jump", m.edgejump);
+    read(j, "Edge Jump Crouch", m.edgejumpcrouch);
     read(j, "Edge Jump Key", m.edgejumpkey);
     read(j, "Slowwalk", m.slowwalk);
     read(j, "Slowwalk key", m.slowwalkKey);
@@ -820,6 +821,7 @@ static void to_json(json& j, const Config::Misc& o)
     WRITE("Fast duck", fastDuck);
     WRITE("Moonwalk", moonwalk);
     WRITE("Edge Jump", edgejump);
+    WRITE("Edge Jump Crouch", edgejumpcrouch);
     WRITE("Edge Jump Key", edgejumpkey);
     WRITE("Slowwalk", slowwalk);
     WRITE("Slowwalk key", slowwalkKey);

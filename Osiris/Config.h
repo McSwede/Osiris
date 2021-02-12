@@ -203,6 +203,7 @@ public:
         bool fastDuck{ false };
         bool moonwalk{ false };
         bool edgejump{ false };
+        bool edgejumpcrouch{ false };
         bool slowwalk{ false };
         bool autoPistol{ false };
         bool autoReload{ false };
