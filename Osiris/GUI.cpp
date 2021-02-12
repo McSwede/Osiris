@@ -305,8 +305,13 @@ void GUI::renderAimbotWindow(bool contentOnly) noexcept
     ImGui::Checkbox("Between shots", &config->aimbot[currentWeapon].betweenShots);
     if (!config->aimbot[currentWeapon].silent) {
         ImGui::Checkbox("Standalone RCS", &config->aimbot[currentWeapon].standaloneRecoilControl);
-        if (config->aimbot[currentWeapon].standaloneRecoilControl) {
-            ImGui::SameLine();
+        ImGui::SameLine();
+
+        ImGui::PushID("Standalone RCS");
+        if (ImGui::Button("..."))
+            ImGui::OpenPopup("");
+        if (ImGui::BeginPopup("")) {
+            ImGui::SetNextItemWidth(240.0f);
             ImGui::Checkbox("Random RCS factor", &config->aimbot[currentWeapon].randomRCS);
             ImGui::InputInt("Ignore Shots", &config->aimbot[currentWeapon].shotsFired);
             if (config->aimbot[currentWeapon].randomRCS) {
@@ -319,7 +324,9 @@ void GUI::renderAimbotWindow(bool contentOnly) noexcept
                 ImGui::SliderFloat("Recoil control X", &config->aimbot[currentWeapon].recoilControlX, 0.0f, 1.0f, "%.2f");
                 ImGui::SliderFloat("Recoil control Y", &config->aimbot[currentWeapon].recoilControlY, 0.0f, 1.0f, "%.2f");
             }
+            ImGui::EndPopup();
         }
+        ImGui::PopID();
     }
     config->aimbot[currentWeapon].shotsFired = std::clamp(config->aimbot[currentWeapon].shotsFired, 0, 10);
     ImGui::Columns(1);
@@ -1274,14 +1281,21 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::Checkbox("Anti AFK kick", &config->misc.antiAfkKick);
     ImGui::Checkbox("Auto strafe", &config->misc.autoStrafe);
     ImGui::Checkbox("Bunny hop", &config->misc.bunnyHop);
-    if (config->misc.bunnyHop) {
-        ImGui::SetNextItemWidth(100.0f);
+    ImGui::PushID("Bunny hop");
+    ImGui::SameLine();
+
+    if (ImGui::Button("..."))
+        ImGui::OpenPopup("");
+
+    if (ImGui::BeginPopup("")) {
+        ImGui::PushItemWidth(100.0f);
         ImGui::SliderInt("Bhop Hit Chance", &config->misc.bhop_hit_chance, 0, 100, "%d%");
-        ImGui::SetNextItemWidth(100.0f);
         ImGui::InputInt("Max Hops Missed", &config->misc.hops_restricted_limit);
-        ImGui::SetNextItemWidth(100.0f);
         ImGui::InputInt("Max Hops Hit", &config->misc.max_hops_hit);
+        ImGui::PopItemWidth();
+        ImGui::EndPopup();
     }
+    ImGui::PopID();
     ImGui::Checkbox("Fast duck", &config->misc.fastDuck);
     ImGui::Checkbox("Moonwalk", &config->misc.moonwalk);
     ImGui::Checkbox("Edge Jump", &config->misc.edgejump);
