@@ -1331,6 +1331,20 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::Checkbox("Reveal suspect", &config->misc.revealSuspect);
     ImGui::Checkbox("Spectator list", &config->misc.spectatorList);
     ImGuiCustom::colorPicker("Watermark", config->misc.watermark);
+    ImGui::SameLine();
+    ImGui::PushID("Watermark");
+    if (ImGui::Button("..."))
+        ImGui::OpenPopup("");
+
+    if (ImGui::BeginPopup("")) {
+        ImGui::Checkbox("FPS", &config->misc.watermarkFPS);
+        ImGui::Checkbox("Ping", &config->misc.watermarkPing);
+        ImGui::Checkbox("Tickrate", &config->misc.watermarkTickrate);
+        ImGui::Checkbox("Time", &config->misc.watermarkTime);
+        ImGui::DragFloat("Scale", &config->misc.watermarkScale, 0.005f, 0.3f, 2.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::EndPopup();
+    }
+    ImGui::PopID();
     ImGuiCustom::colorPicker("Offscreen Enemies", config->misc.offscreenEnemies.color, &config->misc.offscreenEnemies.enabled);
     ImGui::Checkbox("Fix animation LOD", &config->misc.fixAnimationLOD);
     ImGui::Checkbox("Fix bone matrix", &config->misc.fixBoneMatrix);

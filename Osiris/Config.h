@@ -237,6 +237,13 @@ public:
         ColorToggleThickness noscopeCrosshair;
         ColorToggleThickness recoilCrosshair;
         ColorToggle3 watermark;
+        bool watermarkFPS{ true };
+        bool watermarkPing{ true };
+        bool watermarkTickrate{ true };
+        bool watermarkTime{ true };
+        float watermarkPosX{ 0 };
+        float watermarkPosY{ 0 };
+        float watermarkScale{ 1.0f };
         float aspectratio{ 0 };
         std::string killMessageString{ "Gotcha!" };
         int banColor{ 6 };
