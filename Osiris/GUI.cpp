@@ -1436,6 +1436,9 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::Checkbox("Fake prime", &config->misc.fakePrime);
     ImGui::Checkbox("Opposite Hand Knife", &config->misc.oppositeHandKnife);
     ImGui::Checkbox("Bypass sv_pure", &config->misc.svpurebypass);
+    ImGui::Checkbox("Unlock Inventory*", &config->misc.unlockInventory);
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Crashes when equipping weapons");
     ImGui::Checkbox("Preserve Killfeed", &config->misc.preserveKillfeed.enabled);
     ImGui::SameLine();
 

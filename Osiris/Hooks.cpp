@@ -521,7 +521,7 @@ static const DemoPlaybackParameters* __STDCALL getDemoPlaybackParameters(LINUX_A
     return params;
 }
 
-EGCResult __fastcall hkGCRetrieveMessage(void* ecx, void*, uint32_t* punMsgType, void* pubDest, uint32_t cubDest, uint32_t* pcubMsgSize)
+EGCResult __FASTCALL hkGCRetrieveMessage(void* ecx, void*, uint32_t* punMsgType, void* pubDest, uint32_t cubDest, uint32_t* pcubMsgSize)
 {
 
     static auto oGCRetrieveMessage = hooks->gameCoordinator.getOriginal<EGCResult, 2>(punMsgType, pubDest, cubDest, pcubMsgSize);
@@ -540,7 +540,7 @@ EGCResult __fastcall hkGCRetrieveMessage(void* ecx, void*, uint32_t* punMsgType,
     return status;
 }
 
-EGCResult __fastcall hkGCSendMessage(void* ecx, void*, uint32_t unMsgType, const void* pubData, uint32_t cubData)
+EGCResult __FASTCALL hkGCSendMessage(void* ecx, void*, uint32_t unMsgType, const void* pubData, uint32_t cubData)
 {
     static auto oGCSendMessage = hooks->gameCoordinator.getOriginal<EGCResult, 0>(unMsgType, pubData, cubData);
     bool sendMessage = write.PreSendMessage(unMsgType, const_cast<void*>(pubData), cubData);
@@ -549,6 +549,14 @@ EGCResult __fastcall hkGCSendMessage(void* ecx, void*, uint32_t unMsgType, const
         return EGCResult::k_EGCResultOK;
 
     return oGCSendMessage(ecx, unMsgType, const_cast<void*>(pubData), cubData);
+}
+
+static bool __STDCALL isConnected(LINUX_ARGS(void* thisptr))
+{
+    if (config->misc.unlockInventory && (RETURN_ADDRESS() == memory->isLoadoutAllowed))
+        return false;
+
+    return hooks->engine.callOriginal<bool, 27>();
 }
 
 static bool __STDCALL isPlayingDemo(LINUX_ARGS(void* thisptr)) noexcept
@@ -689,6 +697,7 @@ void Hooks::install() noexcept
     clientMode.hookAt(IS_WIN32() ? 58 : 61, updateColorCorrectionWeights);
 
     engine.init(interfaces->engine);
+    engine.hookAt(27, isConnected);
     engine.hookAt(82, isPlayingDemo);
     engine.hookAt(101, getScreenAspectRatio);
     engine.hookAt(IS_WIN32() ? 218 : 219, getDemoPlaybackParameters);

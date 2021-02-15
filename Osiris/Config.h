@@ -228,6 +228,7 @@ public:
         bool prepareRevolver{ false };
         bool oppositeHandKnife{ false };
         bool svpurebypass{ false };
+        bool unlockInventory{ false };
         ColorToggle3 spectatorList;
         bool spectatorListNoTitleBar{ false };
         bool spectatorListNoBackground{ false };

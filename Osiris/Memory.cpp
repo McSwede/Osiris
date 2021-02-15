@@ -130,6 +130,43 @@ static std::uintptr_t findPattern(const char* moduleName, std::string_view patte
     return 0;
 }
 
+static std::uintptr_t findPattern2(const std::string_view moduleName, const std::string_view pattern) noexcept
+{
+    MODULEINFO moduleInfo{ };
+
+    if (!GetModuleInformation(GetCurrentProcess(), GetModuleHandleA(moduleName.data()), &moduleInfo, sizeof(moduleInfo)))
+        return 0;
+
+    const std::uintptr_t start_address = reinterpret_cast<std::uintptr_t>(moduleInfo.lpBaseOfDll);
+    const std::uintptr_t end_address = start_address + moduleInfo.SizeOfImage;
+    const char* scanPattern = pattern.data();
+
+    std::uintptr_t first_match = 0;
+
+    for (std::uintptr_t position = start_address; position < end_address; position++) {
+        if (!*scanPattern)
+            return first_match;
+
+        const std::uint8_t pattern_current = *reinterpret_cast<const std::uint8_t*>(scanPattern);
+        const std::uint8_t memory_current = *reinterpret_cast<const std::uint8_t*>(position);
+
+        if (pattern_current == '\?' || memory_current == ((((scanPattern[0] & (~0x20)) >= 'A' && (scanPattern[0] & (~0x20)) <= 'F') ? ((scanPattern[0] & (~0x20)) - 'A' + 0xA) : ((scanPattern[0] >= '0' && scanPattern[0] <= '9') ? scanPattern[0] - '0' : 0)) << 4 | (((scanPattern[1] & (~0x20)) >= 'A' && (scanPattern[1] & (~0x20)) <= 'F') ? ((scanPattern[1] & (~0x20)) - 'A' + 0xA) : ((scanPattern[1] >= '0' && scanPattern[1] <= '9') ? scanPattern[1] - '0' : 0)))) {
+            if (!first_match)
+                first_match = position;
+
+            if (!scanPattern[2])
+                return first_match;
+
+            scanPattern += pattern_current != '\?' ? 3 : 2;
+        }
+        else {
+            scanPattern = pattern.data();
+            first_match = 0;
+        }
+    }
+    return 0;
+}
+
 Memory::Memory() noexcept
 {
 #ifdef _WIN32
@@ -189,6 +226,7 @@ Memory::Memory() noexcept
     setOrAddAttributeValueByNameFunction = relativeToAbsolute<decltype(setOrAddAttributeValueByNameFunction)>(findPattern(CLIENT_DLL, "\xE8????\x8B\x8D????\x85\xC9\x74\x10") + 1);
     registeredPanoramaEvents = reinterpret_cast<decltype(registeredPanoramaEvents)>(*reinterpret_cast<std::uintptr_t*>(findPattern(CLIENT_DLL, "\xE8????\xA1????\xA8\x01\x75\x21") + 6) - 36);
     makePanoramaSymbolFn = relativeToAbsolute<decltype(makePanoramaSymbolFn)>(findPattern(CLIENT_DLL, "\xE8????\x0F\xB7\x45\x0E\x8D\x4D\x0E") + 1);
+    isLoadoutAllowed = findPattern2(CLIENT_DLL, "75 04 B0 01 5F") -2;
     memalloc = *reinterpret_cast<MemAlloc**>(GetProcAddress(GetModuleHandleA("tier0.dll"), "g_pMemAlloc"));
     ISteamClient* SteamClient = ((ISteamClient * (__cdecl*)(void))GetProcAddress(GetModuleHandleA("steam_api.dll"), "SteamClient"))();
     SteamGameCoordinator = (ISteamGameCoordinator*)SteamClient->GetISteamGenericInterface((void*)1, (void*)1, "SteamGameCoordinator001");

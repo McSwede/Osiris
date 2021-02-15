@@ -100,6 +100,7 @@ public:
     uintptr_t demoOrHLTV;
     uintptr_t money;
     uintptr_t demoFileEndReached;
+    uintptr_t isLoadoutAllowed;
     Entity** gameRules;
 
     short makePanoramaSymbol(const char* name) const noexcept
