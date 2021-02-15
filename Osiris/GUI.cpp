@@ -1329,7 +1329,18 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::Checkbox("Reveal ranks", &config->misc.revealRanks);
     ImGui::Checkbox("Reveal money", &config->misc.revealMoney);
     ImGui::Checkbox("Reveal suspect", &config->misc.revealSuspect);
-    ImGui::Checkbox("Spectator list", &config->misc.spectatorList);
+    ImGuiCustom::colorPicker("Spectator list", config->misc.spectatorList);
+    ImGui::SameLine();
+    ImGui::PushID("Spectator list");
+    if (ImGui::Button("..."))
+        ImGui::OpenPopup("");
+
+    if (ImGui::BeginPopup("")) {
+        ImGui::Checkbox("No Title Bar", &config->misc.spectatorListNoTitleBar);
+        ImGui::Checkbox("No Background", &config->misc.spectatorListNoBackground);
+        ImGui::EndPopup();
+    }
+    ImGui::PopID();
     ImGuiCustom::colorPicker("Watermark", config->misc.watermark);
     ImGui::SameLine();
     ImGui::PushID("Watermark");

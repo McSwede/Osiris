@@ -228,7 +228,9 @@ public:
         bool prepareRevolver{ false };
         bool oppositeHandKnife{ false };
         bool svpurebypass{ false };
-        bool spectatorList{ false };
+        ColorToggle3 spectatorList;
+        bool spectatorListNoTitleBar{ false };
+        bool spectatorListNoBackground{ false };
         PreserveKillfeed preserveKillfeed;
         char clanTag[16];
         KeyBind edgejumpkey = KeyBind::NONE;

@@ -133,7 +133,7 @@ void Misc::updateClanTag(bool tagChanged) noexcept
 
 void Misc::spectatorList() noexcept
 {
-    if (!config->misc.spectatorList)
+    if (!config->misc.spectatorList.enabled)
         return;
 
     if (!interfaces->engine->isInGame() && !interfaces->engine->isConnected() && !gui->isOpen())
@@ -166,23 +166,29 @@ void Misc::spectatorList() noexcept
             continue;
 
         specs++;
-        spect += playerInfo.name;
-        spect += "\n";
+        spect.append(playerInfo.name).append("\n");
     }
 
     static float windowWidth = 200.0f;
+    auto rainbow = rainbowColor(config->misc.spectatorList.rainbowSpeed);
     ImGui::SetNextWindowPos({ ImGui::GetIO().DisplaySize.x - windowWidth, ImGui::GetIO().DisplaySize.y / 2.0f - 200.0f}, ImGuiCond_Once);
     ImGui::SetNextWindowSize({ windowWidth, 0.0f });
-    ImGui::SetNextWindowSizeConstraints({ 0, -1 }, { FLT_MAX, -1 });
+    ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse;
+    if (!gui->isOpen())
+        windowFlags |= ImGuiWindowFlags_NoInputs;
+    if (config->misc.spectatorListNoBackground && !gui->isOpen())
+        windowFlags |= ImGuiWindowFlags_NoBackground;
+    if (config->misc.spectatorListNoTitleBar)
+        windowFlags |= ImGuiWindowFlags_NoTitleBar;
     if (gui->isOpen() || (!gui->isOpen() && specs > 0))
     {
-        if (ImGui::Begin("Spectator List", nullptr, ImGuiWindowFlags_NoDecoration | (gui->isOpen() ? 0 : ImGuiWindowFlags_NoInputs)))
-        {
-            ImGui::textUnformattedCentered("Spectators: ");
-
-            if (specs > 0) spect += "\n";
-            ImGui::Text(spect.c_str());
-        }
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, { 0.5f, 0.5f });
+        ImGui::Begin("Spectator List", nullptr, windowFlags);
+        ImGui::PopStyleVar();
+        if (config->misc.watermark.rainbow)
+            ImGui::TextColored({ std::get<0>(rainbow), std::get<1>(rainbow) ,std::get<2>(rainbow), 1.0f }, spect.c_str());
+        else
+            ImGui::TextColored({ config->misc.spectatorList.color[0], config->misc.spectatorList.color[1] ,config->misc.spectatorList.color[2], 1.0f }, spect.c_str());
         ImGui::End();
     }
 }

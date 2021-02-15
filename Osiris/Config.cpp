@@ -457,7 +457,9 @@ static void from_json(const json& j, Config::Misc& m)
     read(j, "Reveal ranks", m.revealRanks);
     read(j, "Reveal money", m.revealMoney);
     read(j, "Reveal suspect", m.revealSuspect);
-    read(j, "Spectator list", m.spectatorList);
+    read<value_t::object>(j, "Spectator list", m.spectatorList);
+    read(j, "Spectator list No Background", m.spectatorListNoBackground);
+    read(j, "Spectator list No Title Bar", m.spectatorListNoTitleBar);
     read<value_t::object>(j, "Watermark", m.watermark);
     read(j, "Watermark FPS", m.watermarkFPS);
     read(j, "Watermark Ping", m.watermarkPing);
@@ -843,6 +845,8 @@ static void to_json(json& j, const Config::Misc& o)
     WRITE("Reveal money", revealMoney);
     WRITE("Reveal suspect", revealSuspect);
     WRITE("Spectator list", spectatorList);
+    WRITE("Spectator list No Background", spectatorListNoBackground);
+    WRITE("Spectator list No Title Bar", spectatorListNoTitleBar);
     WRITE("Watermark", watermark);
     WRITE("Watermark FPS", watermarkFPS);
     WRITE("Watermark Ping", watermarkPing);
