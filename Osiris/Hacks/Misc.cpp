@@ -277,17 +277,15 @@ void Misc::watermark() noexcept
 
         if (config->misc.watermarkPing) {
             float latency = 0.0f;
-            if (auto networkChannel = interfaces->engine->getNetworkChannel(); networkChannel && networkChannel->getLatency(0) > 0.0f)
-                latency = networkChannel->getLatency(0);
-            if (!(watermark == ""))
-                watermark.append(" | ");
+            if (auto networkChannel = interfaces->engine->getNetworkChannel(); networkChannel && networkChannel->getAvgLatency(0) > 0.0f)
+                latency = networkChannel->getAvgLatency(0);
+            if (!(watermark == "")) watermark.append(" | ");
             watermark.append("Ping: ").append(std::to_string(static_cast<int>(latency * 1000))).append(" ms");
         }
 
         if (config->misc.watermarkTickrate) {
             auto tickRate = 1.0f / memory->globalVars->intervalPerTick;
-            if (!(watermark == ""))
-                watermark.append(" | ");
+            if (!(watermark == "")) watermark.append(" | ");
             watermark.append(std::to_string(static_cast<int>(tickRate))).append(" tick");
         }
 
@@ -296,15 +294,15 @@ void Misc::watermark() noexcept
             const auto localTime = std::localtime(&time);
             std::ostringstream timeShow;
             timeShow << std::setfill('0') << std::setw(2) << localTime->tm_hour << ":" << std::setw(2) << localTime->tm_min;
-            if (!(watermark == ""))
-                watermark.append(" | ");
+            if (!(watermark == "")) watermark.append(" | ");
             watermark.append(timeShow.str());
         }
 
         auto rainbow = rainbowColor(config->misc.watermark.rainbowSpeed);
-
-        auto posX = config->misc.watermarkPosX * ImGui::GetIO().DisplaySize.x;
-        auto posY = config->misc.watermarkPosY * ImGui::GetIO().DisplaySize.y;
+        
+        auto ds = ImGui::GetIO().DisplaySize;
+        auto posX = config->misc.watermarkPosX * ds.x;
+        auto posY = config->misc.watermarkPosY * ds.y;
         ImGuiCond nextFlag = ImGuiCond_None;
         ImGui::SetNextWindowSize({ 0.0f, 0.0f }, ImGuiCond_Always);
         if (ImGui::IsMouseDown(0))
@@ -324,7 +322,6 @@ void Misc::watermark() noexcept
 
         auto [x, y] = ImGui::GetWindowPos();
         auto [w, h] = ImGui::GetWindowSize();
-        auto ds = ImGui::GetIO().DisplaySize;
         if (x > (ds.x - w) && y > (ds.y - h)) {
             x = ds.x - w;
             y = ds.y - h;

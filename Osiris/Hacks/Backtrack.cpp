@@ -58,8 +58,8 @@ void Backtrack::update(FrameStage stage) noexcept
             records[i].push_front(record);
 
             if (backtrackConfig.pingBased) {
-                if (auto networkChannel = interfaces->engine->getNetworkChannel(); networkChannel && networkChannel->getLatency(0) > 0.0f)
-                    backtrackConfig.pingBasedVal = static_cast<int>(networkChannel->getLatency(0) * 1000);
+                if (auto networkChannel = interfaces->engine->getNetworkChannel(); networkChannel && networkChannel->getAvgLatency(0) > 0.0f)
+                    backtrackConfig.pingBasedVal = static_cast<int>(networkChannel->getAvgLatency(0) * 1000);
             }
             else
                 backtrackConfig.pingBasedVal = backtrackConfig.timeLimit;
