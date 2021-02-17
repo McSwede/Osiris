@@ -229,9 +229,6 @@ public:
         bool oppositeHandKnife{ false };
         bool svpurebypass{ false };
         bool unlockInventory{ false };
-        ColorToggle3 spectatorList;
-        bool spectatorListNoTitleBar{ false };
-        bool spectatorListNoBackground{ false };
         PreserveKillfeed preserveKillfeed;
         char clanTag[16];
         KeyBind edgejumpkey = KeyBind::NONE;
@@ -239,6 +236,16 @@ public:
         bool sniperCrosshair{ false };
         ColorToggleThickness noscopeCrosshair;
         ColorToggleThickness recoilCrosshair;
+
+        struct SpectatorList {
+            ColorToggle3 spectatorList;
+            bool noTitleBar = false;
+            bool noBackground = false;
+            ImVec2 pos;
+            ImVec2 size{ 200.0f, 200.0f };
+        };
+
+        SpectatorList spectatorList;
         ColorToggle3 watermark;
         bool watermarkFPS{ true };
         bool watermarkPing{ true };
