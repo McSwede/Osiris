@@ -1352,11 +1352,11 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
         ImGui::OpenPopup("");
 
     if (ImGui::BeginPopup("")) {
-        ImGui::Checkbox("FPS", &config->misc.watermarkFPS);
-        ImGui::Checkbox("Ping", &config->misc.watermarkPing);
-        ImGui::Checkbox("Tickrate", &config->misc.watermarkTickrate);
-        ImGui::Checkbox("Time", &config->misc.watermarkTime);
-        ImGui::DragFloat("Scale", &config->misc.watermarkScale, 0.005f, 0.3f, 2.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::Checkbox("FPS", &config->misc.watermark.fps);
+        ImGui::Checkbox("Ping", &config->misc.watermark.ping);
+        ImGui::Checkbox("Tickrate", &config->misc.watermark.tickrate);
+        ImGui::Checkbox("Time", &config->misc.watermark.time);
+        ImGui::DragFloat("Scale", &config->misc.watermark.scale, 0.005f, 0.3f, 2.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::EndPopup();
     }
     ImGui::PopID();

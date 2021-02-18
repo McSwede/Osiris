@@ -283,13 +283,13 @@ void Misc::watermark() noexcept
     if (config->misc.watermark.enabled) {
         std::string watermark = "";
 
-        if (config->misc.watermarkFPS) {
+        if (config->misc.watermark.fps) {
             static auto frameRate = 1.0f;
             frameRate = 0.9f * frameRate + 0.1f * memory->globalVars->absoluteFrameTime;
             watermark.append("FPS: ").append(std::to_string(static_cast<int>(1 / frameRate)));
         }
 
-        if (config->misc.watermarkPing) {
+        if (config->misc.watermark.ping) {
             float latency = 0.0f;
             if (auto networkChannel = interfaces->engine->getNetworkChannel(); networkChannel && networkChannel->getAvgLatency(0) > 0.0f)
                 latency = networkChannel->getAvgLatency(0);
@@ -297,13 +297,13 @@ void Misc::watermark() noexcept
             watermark.append("Ping: ").append(std::to_string(static_cast<int>(latency * 1000))).append(" ms");
         }
 
-        if (config->misc.watermarkTickrate) {
+        if (config->misc.watermark.tickrate) {
             auto tickRate = 1.0f / memory->globalVars->intervalPerTick;
             if (!(watermark == "")) watermark.append(" | ");
             watermark.append(std::to_string(static_cast<int>(tickRate))).append(" tick");
         }
 
-        if (config->misc.watermarkTime) {
+        if (config->misc.watermark.time) {
             const auto time = std::time(nullptr);
             const auto localTime = std::localtime(&time);
             std::ostringstream timeShow;
@@ -311,19 +311,16 @@ void Misc::watermark() noexcept
             if (!(watermark == "")) watermark.append(" | ");
             watermark.append(timeShow.str());
         }
-
-        auto rainbow = rainbowColor(config->misc.watermark.rainbowSpeed);
         
         auto ds = ImGui::GetIO().DisplaySize;
-        auto posX = config->misc.watermarkPosX * ds.x;
-        auto posY = config->misc.watermarkPosY * ds.y;
+        auto pos = config->misc.watermark.pos * ds;
         ImGuiCond nextFlag = ImGuiCond_None;
         ImGui::SetNextWindowSize({ 0.0f, 0.0f }, ImGuiCond_Always);
         if (ImGui::IsMouseDown(0))
             nextFlag |= ImGuiCond_Once;
         else
             nextFlag |= ImGuiCond_Always;
-        ImGui::SetNextWindowPos({ posX ,posY }, nextFlag);
+        ImGui::SetNextWindowPos({ pos.x ,pos.y }, nextFlag);
 
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
             | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
@@ -356,12 +353,13 @@ void Misc::watermark() noexcept
         x /= ds.x;
         y /= ds.y;
 
-        config->misc.watermarkPosX = x;
-        config->misc.watermarkPosY = y;
+        config->misc.watermark.pos = { x, y };
 
-        ImGui::SetWindowFontScale(config->misc.watermarkScale);
-        if (config->misc.watermark.rainbow)
+        ImGui::SetWindowFontScale(config->misc.watermark.scale);
+        if (config->misc.watermark.rainbow) {
+            auto rainbow = rainbowColor(config->misc.watermark.rainbowSpeed);
             ImGui::TextColored({ std::get<0>(rainbow), std::get<1>(rainbow) ,std::get<2>(rainbow), 1.0f }, watermark.c_str());
+        }
         else
             ImGui::TextColored({ config->misc.watermark.color[0], config->misc.watermark.color[1] ,config->misc.watermark.color[2], 1.0f }, watermark.c_str());
 

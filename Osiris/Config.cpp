@@ -433,6 +433,17 @@ static void from_json(const json& j, Config::Misc::SpectatorList& sl)
     read<value_t::object>(j, "Size", sl.size);
 }
 
+static void from_json(const json& j, Config::Misc::Watermark& w)
+{
+    from_json(j, static_cast<ColorToggle3&>(w));
+    read(j, "FPS", w.fps);
+    read(j, "Ping", w.ping);
+    read(j, "Tickrate", w.tickrate);
+    read(j, "Time", w.time);
+    read(j, "Scale", w.scale);
+    read<value_t::object>(j, "Pos", w.pos);
+}
+
 static void from_json(const json& j, PreserveKillfeed& o)
 {
     read(j, "Enabled", o.enabled);
@@ -471,13 +482,6 @@ static void from_json(const json& j, Config::Misc& m)
     read(j, "Reveal suspect", m.revealSuspect);
     read<value_t::object>(j, "Spectator list", m.spectatorList);
     read<value_t::object>(j, "Watermark", m.watermark);
-    read(j, "Watermark FPS", m.watermarkFPS);
-    read(j, "Watermark Ping", m.watermarkPing);
-    read(j, "Watermark Tickrate", m.watermarkTickrate);
-    read(j, "Watermark Time", m.watermarkTime);
-    read(j, "Watermark Pos X", m.watermarkPosX);
-    read(j, "Watermark Pos Y", m.watermarkPosY);
-    read(j, "Watermark Scale", m.watermarkScale);
     read<value_t::object>(j, "Offscreen Enemies", m.offscreenEnemies);
     read(j, "Fix animation LOD", m.fixAnimationLOD);
     read(j, "Fix bone matrix", m.fixBoneMatrix);
@@ -826,6 +830,20 @@ static void to_json(json& j, const Config::Misc::SpectatorList& o, const Config:
     }
 }
 
+static void to_json(json& j, const Config::Misc::Watermark& o, const Config::Misc::Watermark& dummy = {})
+{
+    to_json(j, static_cast<const ColorToggle3&>(o), dummy);
+    WRITE("FPS", fps);
+    WRITE("Ping", ping);
+    WRITE("Tickrate", tickrate);
+    WRITE("Time", time);
+    WRITE("Scale", scale);
+
+    if (const auto window = ImGui::FindWindowByName("Watermark")) {
+        j["Pos"] = window->Pos;
+    }
+}
+
 static void to_json(json& j, const PreserveKillfeed& o, const PreserveKillfeed& dummy = {})
 {
     WRITE("Enabled", enabled);
@@ -869,13 +887,6 @@ static void to_json(json& j, const Config::Misc& o)
     WRITE("Reveal suspect", revealSuspect);
     WRITE("Spectator list", spectatorList);
     WRITE("Watermark", watermark);
-    WRITE("Watermark FPS", watermarkFPS);
-    WRITE("Watermark Ping", watermarkPing);
-    WRITE("Watermark Tickrate", watermarkTickrate);
-    WRITE("Watermark Time", watermarkTime);
-    WRITE("Watermark Pos X", watermarkPosX);
-    WRITE("Watermark Pos Y", watermarkPosY);
-    WRITE("Watermark Scale", watermarkScale);
     WRITE("Offscreen Enemies", offscreenEnemies);
     WRITE("Fix animation LOD", fixAnimationLOD);
     WRITE("Fix bone matrix", fixBoneMatrix);

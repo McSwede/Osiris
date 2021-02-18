@@ -245,14 +245,16 @@ public:
         };
         SpectatorList spectatorList;
 
-        ColorToggle3 watermark;
-        bool watermarkFPS{ true };
-        bool watermarkPing{ true };
-        bool watermarkTickrate{ true };
-        bool watermarkTime{ true };
-        float watermarkPosX{ 0 };
-        float watermarkPosY{ 0 };
-        float watermarkScale{ 1.0f };
+        struct Watermark : ColorToggle3 {
+            bool fps = true;
+            bool ping = true;
+            bool tickrate = true;
+            bool time = true;
+            float scale = 1.0f;
+            ImVec2 pos;
+        };
+        Watermark watermark;
+
         float aspectratio{ 0 };
         std::string killMessageString{ "Gotcha!" };
         int banColor{ 6 };
