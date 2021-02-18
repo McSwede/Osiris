@@ -121,6 +121,7 @@ public:
         bool no3dSky{ false };
         bool noAimPunch{ false };
         bool noViewPunch{ false };
+        bool noZoom{ false };
         bool noHands{ false };
         bool noSleeves{ false };
         bool noWeapons{ false };

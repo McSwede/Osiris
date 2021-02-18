@@ -353,6 +353,7 @@ static void __STDCALL frameStageNotify(LINUX_ARGS(void* thisptr,) FrameStage sta
         Visuals::disablePostProcessing(stage);
         Visuals::removeVisualRecoil(stage);
         Visuals::applyZoom(stage);
+        Visuals::noZoom();
         Misc::fixAnimationLOD(stage);
         Backtrack::update(stage);
         SkinChanger::run(stage);

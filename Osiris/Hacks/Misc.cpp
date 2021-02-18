@@ -313,14 +313,13 @@ void Misc::watermark() noexcept
         }
         
         auto ds = ImGui::GetIO().DisplaySize;
-        auto pos = config->misc.watermark.pos * ds;
         ImGuiCond nextFlag = ImGuiCond_None;
         ImGui::SetNextWindowSize({ 0.0f, 0.0f }, ImGuiCond_Always);
         if (ImGui::IsMouseDown(0))
             nextFlag |= ImGuiCond_Once;
         else
             nextFlag |= ImGuiCond_Always;
-        ImGui::SetNextWindowPos({ pos.x ,pos.y }, nextFlag);
+        ImGui::SetNextWindowPos({ config->misc.watermark.pos * ds }, nextFlag);
 
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
             | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
