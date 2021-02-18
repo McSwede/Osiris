@@ -426,8 +426,9 @@ static void from_json(const json& j, PurchaseList& pl)
 
 static void from_json(const json& j, Config::Misc::SpectatorList& sl)
 {
-    read(j, "Enabled", sl.enabled);
+    from_json(j, static_cast<ColorToggle3&>(sl));
     read(j, "No Title Bar", sl.noTitleBar);
+    read(j, "No Background", sl.noBackground);
     read<value_t::object>(j, "Pos", sl.pos);
     read<value_t::object>(j, "Size", sl.size);
 }
@@ -469,8 +470,6 @@ static void from_json(const json& j, Config::Misc& m)
     read(j, "Reveal money", m.revealMoney);
     read(j, "Reveal suspect", m.revealSuspect);
     read<value_t::object>(j, "Spectator list", m.spectatorList);
-    read(j, "Spectator list No Background", m.spectatorListNoBackground);
-    read(j, "Spectator list No Title Bar", m.spectatorListNoTitleBar);
     read<value_t::object>(j, "Watermark", m.watermark);
     read(j, "Watermark FPS", m.watermarkFPS);
     read(j, "Watermark Ping", m.watermarkPing);
@@ -817,8 +816,9 @@ static void to_json(json& j, const PurchaseList& o, const PurchaseList& dummy = 
 
 static void to_json(json& j, const Config::Misc::SpectatorList& o, const Config::Misc::SpectatorList& dummy = {})
 {
-    WRITE("Enabled", enabled);
+    to_json(j, static_cast<const ColorToggle3&>(o), dummy);
     WRITE("No Title Bar", noTitleBar);
+    WRITE("No Background", noBackground);
 
     if (const auto window = ImGui::FindWindowByName("Spectator list")) {
         j["Pos"] = window->Pos;
@@ -868,8 +868,6 @@ static void to_json(json& j, const Config::Misc& o)
     WRITE("Reveal money", revealMoney);
     WRITE("Reveal suspect", revealSuspect);
     WRITE("Spectator list", spectatorList);
-    WRITE("Spectator list No Background", spectatorListNoBackground);
-    WRITE("Spectator list No Title Bar", spectatorListNoTitleBar);
     WRITE("Watermark", watermark);
     WRITE("Watermark FPS", watermarkFPS);
     WRITE("Watermark Ping", watermarkPing);

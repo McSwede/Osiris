@@ -1330,7 +1330,7 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::Checkbox("Reveal money", &config->misc.revealMoney);
     ImGui::Checkbox("Reveal suspect", &config->misc.revealSuspect);
 
-    ImGuiCustom::colorPicker("Spectator list", config->misc.spectatorList.spectatorList);
+    ImGuiCustom::colorPicker("Spectator list", config->misc.spectatorList);
     ImGui::SameLine();
 
     ImGui::PushID("Spectator list");
@@ -1339,7 +1339,7 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
 
     if (ImGui::BeginPopup("")) {
         ImGui::Checkbox("No Title Bar", &config->misc.spectatorList.noTitleBar);
-        ImGui::Checkbox("No Background", &config->misc.spectatorList.noTitleBar);
+        ImGui::Checkbox("No Background", &config->misc.spectatorList.noBackground);
         ImGui::EndPopup();
     }
     ImGui::PopID();

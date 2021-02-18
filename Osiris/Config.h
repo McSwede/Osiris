@@ -237,15 +237,14 @@ public:
         ColorToggleThickness noscopeCrosshair;
         ColorToggleThickness recoilCrosshair;
 
-        struct SpectatorList {
-            ColorToggle3 spectatorList;
+        struct SpectatorList : ColorToggle3 {
             bool noTitleBar = false;
             bool noBackground = false;
             ImVec2 pos;
             ImVec2 size{ 200.0f, 200.0f };
         };
-
         SpectatorList spectatorList;
+
         ColorToggle3 watermark;
         bool watermarkFPS{ true };
         bool watermarkPing{ true };
