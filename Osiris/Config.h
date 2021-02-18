@@ -135,6 +135,7 @@ public:
         ColorToggleThickness drawAimbotFOV;
         KeyBindToggle zoomKey = KeyBind::NONE;
         bool thirdperson{ false };
+        bool deadThirdperson{ false };
         KeyBindToggle thirdpersonKey = KeyBind::NONE;
         int thirdpersonDistance{ 0 };
         int viewmodelFov{ 0 };

@@ -177,11 +177,12 @@ void Visuals::modifySmoke(FrameStage stage) noexcept
 
 void Visuals::thirdperson() noexcept
 {
-    if (!config->visuals.thirdperson)
-        return;
-
-    memory->input->isCameraInThirdPerson = (!config->visuals.thirdpersonKey.isSet() || config->visuals.thirdpersonKey.isToggled()) && localPlayer && localPlayer->isAlive();
-    memory->input->cameraOffset.z = static_cast<float>(config->visuals.thirdpersonDistance); 
+    if (config->visuals.thirdperson) {
+        memory->input->isCameraInThirdPerson = (!config->visuals.thirdpersonKey.isSet() || config->visuals.thirdpersonKey.isToggled()) && localPlayer && localPlayer->isAlive();
+        memory->input->cameraOffset.z = static_cast<float>(config->visuals.thirdpersonDistance);
+    }
+    if (!localPlayer->isAlive())
+        localPlayer->setObserverMode() = (config->visuals.deadThirdperson && (!config->visuals.thirdpersonKey.isSet() || config->visuals.thirdpersonKey.isToggled())) ? ObsMode::Chase : ObsMode::InEye;
 }
 
 void Visuals::removeVisualRecoil(FrameStage stage) noexcept
