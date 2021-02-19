@@ -944,8 +944,6 @@ void GUI::renderVisualsWindow(bool contentOnly) noexcept
     ImGui::SameLine();
     ImGui::PushID("Thirdperson Key");
     hotkey2("", config->visuals.thirdpersonKey);
-    ImGui::SameLine();
-    ImGui::Checkbox("Dead thirdperson", &config->visuals.deadThirdperson);
     ImGui::PopID();
     ImGui::PushItemWidth(290.0f);
     ImGui::PushID(0);
