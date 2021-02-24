@@ -116,6 +116,7 @@ static HRESULT __stdcall present(IDirect3DDevice9* device, const RECT* src, cons
     Visuals::hitMarker(nullptr, ImGui::GetBackgroundDrawList());
     Visuals::drawAimbotFOV(ImGui::GetBackgroundDrawList());
     Visuals::drawMolotovHull(ImGui::GetBackgroundDrawList());
+    Misc::watermark();
 
     Aimbot::updateInput();
     Visuals::updateInput();
@@ -318,13 +319,6 @@ static bool __FASTCALL svCheatsGetBool(void* _this) noexcept
         return true;
 
     return hooks->svCheats.getOriginal<bool, IS_WIN32() ? 13 : 16>()(_this);
-}
-
-static void __STDCALL paintTraverse(unsigned int panel, bool forceRepaint, bool allowForce) noexcept
-{
-    if (interfaces->panel->getName(panel) == "MatSystemTopPanel") {
-    }
-    hooks->panel.callOriginal<void, 41>(panel, forceRepaint, allowForce);
 }
 
 static void __STDCALL frameStageNotify(LINUX_ARGS(void* thisptr,) FrameStage stage) noexcept
@@ -639,6 +633,7 @@ static void swapWindow(SDL_Window* window) noexcept
         Misc::spectatorList();
         Visuals::hitMarker(nullptr, ImGui::GetBackgroundDrawList());
         Visuals::drawMolotovHull(ImGui::GetBackgroundDrawList());
+        Misc::watermark();
 
         Aimbot::updateInput();
         Visuals::updateInput();
@@ -683,7 +678,6 @@ void Hooks::install() noexcept
 #endif
     
 #ifdef _WIN32
-    panel.init(interfaces->panel);
     bspQuery.init(interfaces->engine->getBSPTreeQuery());
 #endif
 
@@ -738,7 +732,6 @@ void Hooks::install() noexcept
 
 #ifdef _WIN32
     bspQuery.hookAt(6, listLeavesInBox);
-    panel.hookAt(41, paintTraverse);
     surface.hookAt(67, lockCursor);
 
     if constexpr (std::is_same_v<HookType, MinHook>)
@@ -779,7 +772,6 @@ void Hooks::uninstall() noexcept
 
 #ifdef _WIN32
     bspQuery.restore();
-    panel.restore();
 #endif
     client.restore();
     clientMode.restore();
