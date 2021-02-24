@@ -116,7 +116,6 @@ static HRESULT __stdcall present(IDirect3DDevice9* device, const RECT* src, cons
     Visuals::hitMarker(nullptr, ImGui::GetBackgroundDrawList());
     Visuals::drawAimbotFOV(ImGui::GetBackgroundDrawList());
     Visuals::drawMolotovHull(ImGui::GetBackgroundDrawList());
-    Misc::watermark();
 
     Aimbot::updateInput();
     Visuals::updateInput();
