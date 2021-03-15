@@ -30,6 +30,9 @@
     <Filter Include="Protobuffs">
       <UniqueIdentifier>{de071ad7-c1f9-464e-ac23-b398e2ee4add}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{9c108701-c50c-4f8a-9b3c-013b6407706f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GUI.cpp">
@@ -169,6 +172,9 @@
     </ClCompile>
     <ClCompile Include="Hacks\ProfileChanger.cpp">
       <Filter>Hacks</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -507,6 +513,21 @@
     </ClInclude>
     <ClInclude Include="SDK\SteamAPI.h">
       <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK\Steam.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources\avatar_ct.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources\avatar_tt.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources\Resource.h">
+      <Filter>Resources</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
