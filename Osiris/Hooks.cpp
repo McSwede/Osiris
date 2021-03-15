@@ -138,6 +138,8 @@ static HRESULT __stdcall present(IDirect3DDevice9* device, const RECT* src, cons
         device->EndScene();
     }
 
+    GameData::clearUnusedAvatars();
+
     return hooks->originalPresent(device, src, dest, windowOverride, dirtyRegion);
 }
 
@@ -145,6 +147,7 @@ static HRESULT __stdcall reset(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* 
 {
     ImGui_ImplDX9_InvalidateDeviceObjects();
     SkinChanger::clearItemIconTextures();
+    GameData::clearTextures();
     return hooks->originalReset(device, params);
 }
 
@@ -650,6 +653,9 @@ static void swapWindow(SDL_Window* window) noexcept
     ImGui::Render();
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    GameData::clearUnusedAvatars();
+
     hooks->swapWindow(window);
 }
 
