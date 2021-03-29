@@ -456,11 +456,16 @@ static bool renderPlayerEsp(const PlayerData& playerData, const Player& playerCo
     else
         return false;
 
+    if (playerData.immune)
+        Helpers::setAlphaFactor(0.5f);
+
     renderPlayerBox(playerData, playerConfig);
     drawPlayerSkeleton(playerConfig.skeleton, playerData.bones);
 
     if (const BoundingBox headBbox{ playerData.headMins, playerData.headMaxs, playerConfig.headBox.scale })
         renderBox(headBbox, playerConfig.headBox);
+
+    Helpers::setAlphaFactor(1.0f);
 
     return true;
 }
