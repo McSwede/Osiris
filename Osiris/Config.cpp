@@ -18,6 +18,7 @@
 #include "Hacks/Backtrack.h"
 #include "Hacks/Glow.h"
 #include "Hacks/ProfileChanger.h"
+#include "Hacks/Sound.h"
 
 #ifdef _WIN32
 int CALLBACK fontCallback(const LOGFONTW* lpelfe, const TEXTMETRICW*, DWORD, LPARAM lParam)
@@ -52,7 +53,7 @@ int CALLBACK fontCallback(const LOGFONTW* lpelfe, const TEXTMETRICW*, DWORD, LPA
 }
 #endif
 
-Config::Config(const char* name) noexcept
+Config::Config() noexcept
 {
 #ifdef _WIN32
     if (PWSTR pathToDocuments; SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, nullptr, &pathToDocuments))) {
@@ -64,7 +65,7 @@ Config::Config(const char* name) noexcept
         path = homeDir;
 #endif
 
-    path /= name;
+    path /= "Trigon";
     listConfigs();
     misc.clanTag[0] = '\0';
 
@@ -191,6 +192,12 @@ static void from_json(const json& j, Projectile& p)
     read<value_t::object>(j, "Trails", p.trails);
 }
 
+static void from_json(const json& j, HealthBar& o)
+{
+    from_json(j, static_cast<ColorToggle&>(o));
+    read(j, "Type", o.type);
+}
+
 static void from_json(const json& j, Player& p)
 {
     from_json(j, static_cast<Shared&>(p));
@@ -199,7 +206,7 @@ static void from_json(const json& j, Player& p)
     read<value_t::object>(j, "Flash Duration", p.flashDuration);
     read(j, "Audible Only", p.audibleOnly);
     read(j, "Spotted Only", p.spottedOnly);
-    read(j, "Health Bar", p.healthBar);
+    read<value_t::object>(j, "Health Bar", p.healthBar);
     read(j, "Dead ESP", p.deadEsp);
     read<value_t::object>(j, "Skeleton", p.skeleton);
     read<value_t::object>(j, "Head Box", p.headBox);
@@ -381,20 +388,6 @@ static void from_json(const json& j, item_setting& i)
     i.onLoad();
 }
 
-static void from_json(const json& j, Config::Sound::Player& p)
-{
-    read(j, "Master volume", p.masterVolume);
-    read(j, "Headshot volume", p.headshotVolume);
-    read(j, "Weapon volume", p.weaponVolume);
-    read(j, "Footstep volume", p.footstepVolume);
-}
-
-static void from_json(const json& j, Config::Sound& s)
-{
-    read(j, "Chicken volume", s.chickenVolume);
-    read(j, "Players", s.players);
-}
-
 static void from_json(const json& j, Config::Style& s)
 {
     read(j, "Menu style", s.menuStyle);
@@ -523,6 +516,7 @@ static void from_json(const json& j, Config::Misc& m)
     read(j, "sv_pure Bypass", m.svpurebypass);
     read(j, "Unlock Inventory", m.unlockInventory);
     read<value_t::object>(j, "Preserve Killfeed", m.preserveKillfeed);
+    read(j, "Deathmatch godmode", m.deathmatchGod);
 }
 
 static void from_json(const json& j, Config::Misc::Reportbot& r)
@@ -576,7 +570,7 @@ void Config::load(const char8_t* name, bool incremental) noexcept
     read<value_t::object>(j, "ESP", streamProofESP);
     read<value_t::object>(j, "Visuals", visuals);
     read(j, "Skin changer", skinChanger);
-    read<value_t::object>(j, "Sound", sound);
+    ::Sound::fromJson(j["Sound"]);
     read<value_t::object>(j, "Style", style);
     read<value_t::object>(j, "Misc", misc);
 }
@@ -645,6 +639,12 @@ static void to_json(json& j, const Shared& o, const Shared& dummy = {})
     WRITE("Box", box);
     WRITE("Name", name);
     WRITE("Text Cull Distance", textCullDistance);
+}
+
+static void to_json(json& j, const HealthBar& o, const HealthBar& dummy = {})
+{
+    to_json(j, static_cast<const ColorToggle&>(o), dummy);
+    WRITE("Type", type);
 }
 
 static void to_json(json& j, const Player& o, const Player& dummy = {})
@@ -795,24 +795,6 @@ static void to_json(json& j, const Config::Misc::Reportbot& o, const Config::Mis
     WRITE("Other Hacking", other);
 }
 
-static void to_json(json& j, const Config::Sound::Player& o)
-{
-    const Config::Sound::Player dummy;
-
-    WRITE("Master volume", masterVolume);
-    WRITE("Headshot volume", headshotVolume);
-    WRITE("Weapon volume", weaponVolume);
-    WRITE("Footstep volume", footstepVolume);
-}
-
-static void to_json(json& j, const Config::Sound& o)
-{
-    const Config::Sound dummy;
-
-    WRITE("Chicken volume", chickenVolume);
-    j["Players"] = o.players;
-}
-
 static void to_json(json& j, const PurchaseList& o, const PurchaseList& dummy = {})
 {
     WRITE("Enabled", enabled);
@@ -929,6 +911,7 @@ static void to_json(json& j, const Config::Misc& o)
     WRITE("sv_pure Bypass", svpurebypass);
     WRITE("Unlock Inventory", unlockInventory);
     WRITE("Preserve Killfeed", preserveKillfeed);
+    WRITE("Deathmatch godmode", deathmatchGod);
 }
 
 static void to_json(json& j, const Config::Visuals::ColorCorrection& o, const Config::Visuals::ColorCorrection& dummy)
@@ -1075,7 +1058,7 @@ void Config::save(size_t id) const noexcept
         to_json(j["Chams"]["Toggle Key"], chamsToggleKey, KeyBind::NONE);
         to_json(j["Chams"]["Hold Key"], chamsHoldKey, KeyBind::NONE);
         j["ESP"] = streamProofESP;
-        j["Sound"] = sound;
+        j["Sound"] = ::Sound::toJson();
         j["Visuals"] = visuals;
         j["Misc"] = misc;
         j["Style"] = style;
@@ -1119,7 +1102,7 @@ void Config::reset() noexcept
     streamProofESP = { };
     visuals = { };
     skinChanger = { };
-    sound = { };
+    Sound::resetConfig();
     style = { };
     misc = { };
 }

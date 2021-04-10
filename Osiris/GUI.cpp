@@ -29,9 +29,27 @@
 #include "Hacks/AntiAim.h"
 #include "Hacks/Backtrack.h"
 #include "Hacks/ProfileChanger.h"
+#include "Hacks/Sound.h"
 
 constexpr auto windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize
 | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+
+static ImFont* addFontFromVFONT(const std::string& path, float size, const ImWchar* glyphRanges, bool merge) noexcept
+{
+    auto file = Helpers::loadBinaryFile(path);
+    if (!Helpers::decodeVFONT(file))
+        return nullptr;
+
+    ImFontConfig cfg;
+    cfg.FontData = file.data();
+    cfg.FontDataSize = file.size();
+    cfg.FontDataOwnedByAtlas = false;
+    cfg.MergeMode = merge;
+    cfg.GlyphRanges = glyphRanges;
+    cfg.SizePixels = size;
+
+    return ImGui::GetIO().Fonts->AddFont(&cfg);
+}
 
 GUI::GUI() noexcept
 {
@@ -49,15 +67,17 @@ GUI::GUI() noexcept
     io.LogFilename = nullptr;
     io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 
+    ImFontConfig cfg;
+    cfg.SizePixels = 15.0f;
+
 #ifdef _WIN32
     if (PWSTR pathToFonts; SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Fonts, 0, nullptr, &pathToFonts))) {
         const std::filesystem::path path{ pathToFonts };
         CoTaskMemFree(pathToFonts);
 
-        ImFontConfig cfg;
-        cfg.OversampleV = 3;
-
-        fonts.tahoma = io.Fonts->AddFontFromFileTTF((path / "tahoma.ttf").string().c_str(), 15.0f, &cfg, Helpers::getFontGlyphRanges());
+        fonts.normal15px = io.Fonts->AddFontFromFileTTF((path / "tahoma.ttf").string().c_str(), 15.0f, &cfg, Helpers::getFontGlyphRanges());
+        if (!fonts.normal15px)
+            io.Fonts->AddFontDefault(&cfg);
 
         cfg.MergeMode = true;
         static constexpr ImWchar symbol[]{
@@ -66,10 +86,14 @@ GUI::GUI() noexcept
         };
         io.Fonts->AddFontFromFileTTF((path / "seguisym.ttf").string().c_str(), 15.0f, &cfg, symbol);
         cfg.MergeMode = false;
-
-        fonts.segoeui = io.Fonts->AddFontFromFileTTF((path / "segoeui.ttf").string().c_str(), 15.0f, &cfg, Helpers::getFontGlyphRanges());
     }
+#else
+    fonts.normal15px = addFontFromVFONT("csgo/panorama/fonts/notosans-regular.vfont", 15.0f, Helpers::getFontGlyphRanges(), false);
 #endif
+    if (!fonts.normal15px)
+        io.Fonts->AddFontDefault(&cfg);
+    addFontFromVFONT("csgo/panorama/fonts/notosanskr-regular.vfont", 15.0f, io.Fonts->GetGlyphRangesKorean(), true);
+    addFontFromVFONT("csgo/panorama/fonts/notosanssc-regular.vfont", 15.0f, io.Fonts->GetGlyphRangesChineseFull(), true);
 }
 
 void GUI::render() noexcept
@@ -86,7 +110,7 @@ void GUI::render() noexcept
         renderVisualsWindow();
         renderSkinChangerWindow();
         ProfileChanger::drawGUI(false);
-        renderSoundWindow();
+        Sound::drawGUI(false);
         renderStyleWindow();
         renderMiscWindow();
         renderConfigWindow();
@@ -163,7 +187,7 @@ void GUI::renderMenuBar() noexcept
         menuBarItem("Visuals", window.visuals);
         menuBarItem("Skin changer", window.skinChanger);
         ProfileChanger::menuBarItem();
-        menuBarItem("Sound", window.sound);
+        Sound::menuBarItem();
         menuBarItem("Style", window.style);
         menuBarItem("Misc", window.misc);
         menuBarItem("Config", window.config);
@@ -553,7 +577,7 @@ void GUI::renderStreamProofESPWindow(bool contentOnly) noexcept
         }
     };
 
-    if (ImGui::ListBoxHeader("##list", { 170.0f, 300.0f })) {
+    if (ImGui::BeginListBox("##list", { 170.0f, 300.0f })) {
         constexpr std::array categories{ "Enemies", "Allies", "Weapons", "Projectiles", "Loot Crates", "Other Entities" };
 
         for (std::size_t i = 0; i < categories.size(); ++i) {
@@ -770,7 +794,7 @@ void GUI::renderStreamProofESPWindow(bool contentOnly) noexcept
             ImGui::Unindent();
             ImGui::PopID();
         }
-        ImGui::ListBoxFooter();
+        ImGui::EndListBox();
     }
 
     ImGui::SameLine();
@@ -856,8 +880,27 @@ void GUI::renderStreamProofESPWindow(bool contentOnly) noexcept
             ImGui::PopID();
         
             ImGui::SameLine(spacing);
-            ImGui::Checkbox("Health Bar", &playerConfig.healthBar);
+            ImGui::Checkbox("Health Bar", &playerConfig.healthBar.enabled);
+            ImGui::SameLine();
+
+            ImGui::PushID("Health Bar");
+
+            if (ImGui::Button("..."))
+                ImGui::OpenPopup("");
+
+            if (ImGui::BeginPopup("")) {
+                ImGui::SetNextItemWidth(95.0f);
+                ImGui::Combo("Type", &playerConfig.healthBar.type, "Gradient\0Solid\0");
+                if (playerConfig.healthBar.type == HealthBar::Solid) {
+                    ImGui::SameLine();
+                    ImGuiCustom::colorPicker("", static_cast<Color4&>(playerConfig.healthBar));
+                }
+                ImGui::EndPopup();
+            }
+
+            ImGui::PopID();
             ImGui::Checkbox("Dead ESP", &playerConfig.deadEsp);
+
         } else if (currentCategory == 2) {
             auto& weaponConfig = config->streamProofESP.weapons[currentItem];
             ImGuiCustom::colorPicker("Ammo", weaponConfig.ammo);
@@ -1097,8 +1140,8 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
                         ImGui::PopID();
                     }
                 }
-                ImGui::EndChild();
             }
+            ImGui::EndChild();
             ImGui::PopID();
             ImGui::EndCombo();
         }
@@ -1135,8 +1178,11 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
         static std::size_t selectedStickerSlot = 0;
 
         ImGui::PushItemWidth(-1);
+        ImVec2 size;
+        size.x = 0.0f;
+        size.y = ImGui::GetTextLineHeightWithSpacing() * 5.25f + ImGui::GetStyle().FramePadding.y * 2.0f;
 
-        if (ImGui::ListBoxHeader("", 5)) {
+        if (ImGui::BeginListBox("", size)) {
             for (int i = 0; i < 5; ++i) {
                 ImGui::PushID(i);
 
@@ -1148,7 +1194,7 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
 
                 ImGui::PopID();
             }
-            ImGui::ListBoxFooter();
+            ImGui::EndListBox();
         }
 
         ImGui::PopItemWidth();
@@ -1189,8 +1235,8 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
                         ImGui::PopID();
                     }
                 }
-                ImGui::EndChild();
             }
+            ImGui::EndChild();
             ImGui::PopID();
             ImGui::EndCombo();
         }
@@ -1211,29 +1257,6 @@ void GUI::renderSkinChangerWindow(bool contentOnly) noexcept
         SkinChanger::scheduleHudUpdate();
 
     ImGui::TextUnformatted("nSkinz by namazso");
-
-    if (!contentOnly)
-        ImGui::End();
-}
-
-void GUI::renderSoundWindow(bool contentOnly) noexcept
-{
-    if (!contentOnly) {
-        if (!window.sound)
-            return;
-        ImGui::SetNextWindowSize({ 0.0f, 0.0f });
-        ImGui::Begin("Sound", &window.sound, windowFlags);
-    }
-    ImGui::SliderInt("Chicken volume", &config->sound.chickenVolume, 0, 200, "%d%%");
-
-    static int currentCategory{ 0 };
-    ImGui::PushItemWidth(110.0f);
-    ImGui::Combo("", &currentCategory, "Local player\0Allies\0Enemies\0");
-    ImGui::PopItemWidth();
-    ImGui::SliderInt("Master volume", &config->sound.players[currentCategory].masterVolume, 0, 200, "%d%%");
-    ImGui::SliderInt("Headshot volume", &config->sound.players[currentCategory].headshotVolume, 0, 200, "%d%%");
-    ImGui::SliderInt("Weapon volume", &config->sound.players[currentCategory].weaponVolume, 0, 200, "%d%%");
-    ImGui::SliderInt("Footstep volume", &config->sound.players[currentCategory].footstepVolume, 0, 200, "%d%%");
 
     if (!contentOnly)
         ImGui::End();
@@ -1331,6 +1354,7 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     ImGui::Checkbox("Reveal money", &config->misc.revealMoney);
     ImGui::Checkbox("Reveal suspect", &config->misc.revealSuspect);
     ImGui::Checkbox("Reveal votes", &config->misc.revealVotes);
+    ImGui::Checkbox("Deathmatch godmode", &config->misc.deathmatchGod);
 
     ImGuiCustom::colorPicker("Spectator list", config->misc.spectatorList);
     ImGui::SameLine();
@@ -1589,7 +1613,7 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
                     case 8: config->visuals = { }; break;
                     case 9: config->skinChanger = { }; SkinChanger::scheduleHudUpdate(); break;
                     case 10: ProfileChanger::resetConfig(); ProfileChanger::Apply(); break;
-                    case 11: config->sound = { }; break;
+                    case 11: Sound::resetConfig(); break;
                     case 12: config->style = { }; updateColors(); break;
                     case 13: config->misc = { };  Misc::updateClanTag(true); break;
                     }
@@ -1681,14 +1705,7 @@ void GUI::renderGuiStyle2() noexcept
             ImGui::EndTabItem();
         }
         ProfileChanger::tabItem();
-        if (ImGui::BeginTabItem("Sound")) {
-            renderSoundWindow(true);
-            ImGui::EndTabItem();
-        }
-        if (ImGui::BeginTabItem("Style")) {
-            renderStyleWindow(true);
-            ImGui::EndTabItem();
-        }
+        Sound::tabItem();
         if (ImGui::BeginTabItem("Misc")) {
             renderMiscWindow(true);
             ImGui::EndTabItem();
