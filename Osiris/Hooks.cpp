@@ -47,6 +47,8 @@
 #include "Hacks/Visuals.h"
 #include "Hacks/ProfileChanger.h"
 
+#include "SDK/ClientClass.h"
+#include "SDK/Cvar.h"
 #include "SDK/Engine.h"
 #include "SDK/Entity.h"
 #include "SDK/EntityList.h"

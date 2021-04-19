@@ -1,8 +1,12 @@
-﻿#include <array>
-#include <cwctype>
+﻿#include <algorithm>
+#include <array>
+#include <cwchar>
 #include <fstream>
-#include <functional>
+#include <iterator>
 #include <string>
+#include <string_view>
+#include <unordered_map>
+#include <vector>
 
 #ifdef _WIN32
 #include <ShlObj.h>
@@ -11,13 +15,13 @@
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
-#include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_stdlib.h"
 
 #include "imguiCustom.h"
 
 #include "GUI.h"
 #include "Config.h"
+#include "ConfigStructs.h"
 #include "Hacks/Misc.h"
 #include "Hacks/SkinChanger.h"
 #include "Helpers.h"
@@ -890,7 +894,7 @@ void GUI::renderStreamProofESPWindow(bool contentOnly) noexcept
 
             if (ImGui::BeginPopup("")) {
                 ImGui::SetNextItemWidth(95.0f);
-                ImGui::Combo("Type", &playerConfig.healthBar.type, "Gradient\0Solid\0");
+                ImGui::Combo("Type", &playerConfig.healthBar.type, "Gradient\0Solid\0Health-based\0");
                 if (playerConfig.healthBar.type == HealthBar::Solid) {
                     ImGui::SameLine();
                     ImGuiCustom::colorPicker("", static_cast<Color4&>(playerConfig.healthBar));
@@ -1017,7 +1021,7 @@ void GUI::renderVisualsWindow(bool contentOnly) noexcept
     ImGui::SliderFloat("Hit effect time", &config->visuals.hitEffectTime, 0.1f, 1.5f, "%.2fs");
     ImGui::Combo("Hit marker", &config->visuals.hitMarker, "None\0Default (Cross)\0");
     ImGui::SliderFloat("Hit marker time", &config->visuals.hitMarkerTime, 0.1f, 1.5f, "%.2fs");
-    ImGuiCustom::colorPicker("Bullet Tracers", config->visuals.bulletTracers.color.color.data(), &config->visuals.bulletTracers.color.color[3], nullptr, nullptr, &config->visuals.bulletTracers.enabled);
+    ImGuiCustom::colorPicker("Bullet Tracers", config->visuals.bulletTracers.color.data(), &config->visuals.bulletTracers.color[3], nullptr, nullptr, &config->visuals.bulletTracers.enabled);
     ImGuiCustom::colorPicker("Draw aimbot FOV", config->visuals.drawAimbotFOV);
     ImGuiCustom::colorPicker("Molotov Hull", config->visuals.molotovHull);
 
@@ -1358,7 +1362,6 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
 
     ImGuiCustom::colorPicker("Spectator list", config->misc.spectatorList);
     ImGui::SameLine();
-
     ImGui::PushID("Spectator list");
     if (ImGui::Button("..."))
         ImGui::OpenPopup("");
@@ -1372,7 +1375,6 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
 
     ImGuiCustom::colorPicker("Watermark", config->misc.watermark);
     ImGui::SameLine();
-
     ImGui::PushID("Watermark");
     if (ImGui::Button("..."))
         ImGui::OpenPopup("");
@@ -1386,7 +1388,25 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
         ImGui::EndPopup();
     }
     ImGui::PopID();
-    ImGuiCustom::colorPicker("Offscreen Enemies", config->misc.offscreenEnemies.color, &config->misc.offscreenEnemies.enabled);
+
+    ImGuiCustom::colorPicker("Offscreen Enemies", config->misc.offscreenEnemies, &config->misc.offscreenEnemies.enabled);
+    ImGui::SameLine();
+    ImGui::PushID("Offscreen Enemies");
+    if (ImGui::Button("..."))
+        ImGui::OpenPopup("");
+
+    if (ImGui::BeginPopup("")) {
+        ImGui::Checkbox("Health Bar", &config->misc.offscreenEnemies.healthBar.enabled);
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(95.0f);
+        ImGui::Combo("Type", &config->misc.offscreenEnemies.healthBar.type, "Gradient\0Solid\0Health-based\0");
+        if (config->misc.offscreenEnemies.healthBar.type == HealthBar::Solid) {
+            ImGui::SameLine();
+            ImGuiCustom::colorPicker("", static_cast<Color4&>(config->misc.offscreenEnemies.healthBar));
+        }
+        ImGui::EndPopup();
+    }
+    ImGui::PopID();
     ImGui::Checkbox("Fix animation LOD", &config->misc.fixAnimationLOD);
     ImGui::Checkbox("Fix bone matrix", &config->misc.fixBoneMatrix);
     ImGui::Checkbox("Fix movement", &config->misc.fixMovement);
