@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Inconstructible.h"
 #include "VirtualMethod.h"
 
 struct ClientClass;
@@ -17,6 +18,7 @@ public:
 	int InReliableState;
 	int chokedPackets;
 };
+    //INCONSTRUCTIBLE(NetworkChannel)
 
 class NetworkMessage
 {
