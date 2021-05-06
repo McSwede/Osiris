@@ -526,7 +526,7 @@ void Visuals::drawAimbotFOV(ImDrawList* drawList) noexcept
     if (!config->aimbot[weaponIndex].enabled)
         weaponIndex = 0;
     const auto& screensize = ImGui::GetIO().DisplaySize;
-    float radius = std::tan(degreesToRadians(config->aimbot[weaponIndex].fov) / 2.f) / std::tan(degreesToRadians(localPlayer->isScoped() ? localPlayer->fov() : (105 + config->visuals.fov)) / 2.f) * screensize.x;
+    float radius = std::tan(Helpers::rad2deg(config->aimbot[weaponIndex].fov) / 2.f) / std::tan(Helpers::rad2deg(localPlayer->isScoped() ? localPlayer->fov() : (105 + config->visuals.fov)) / 2.f) * screensize.x;
     ImU32 color = Helpers::calculateColor(config->visuals.drawAimbotFOV);
     drawList->AddCircleFilled({ screensize.x / 2.0f, screensize.y / 2.0f }, radius, color, 360);
 }
