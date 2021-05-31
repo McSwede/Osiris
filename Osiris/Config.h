@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "imgui/imgui.h"
-#include "Hacks/SkinChanger.h"
+#include "Hacks/InventoryChanger.h"
 #include "ConfigStructs.h"
 #include "InputUtil.h"
 
@@ -218,7 +218,6 @@ public:
         bool oppositeHandKnife{ false };
         bool svpurebypass{ false };
         bool unlockInventory{ false };
-        bool deathmatchGod = false;
         PreserveKillfeed preserveKillfeed;
         char clanTag[16];
         KeyBind edgejumpkey = KeyBind::NONE;
