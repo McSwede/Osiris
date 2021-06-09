@@ -1434,7 +1434,7 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
                             updateColors();
                             InventoryChanger::scheduleHudUpdate();
                             Misc::updateClanTag(true);
-                            ProfileChanger::Apply();
+                            //ProfileChanger::Apply(); TODO: Fix or remove ProfileChanger
                         }
 
                 ImGui::EndPopup();
