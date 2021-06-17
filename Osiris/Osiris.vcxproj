@@ -37,7 +37,6 @@
     <ClCompile Include="Hacks\Chams.cpp" />
     <ClCompile Include="Hacks\EnginePrediction.cpp" />
     <ClCompile Include="Hacks\Glow.cpp" />
-    <ClCompile Include="Hacks\ProfileChanger.cpp" />
     <ClCompile Include="Hacks\InventoryChanger.cpp" />
     <ClCompile Include="Hacks\Sound.cpp" />
     <ClCompile Include="Hacks\StreamProofESP.cpp" />
@@ -69,8 +68,6 @@
     <ClCompile Include="imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="Memory.cpp" />
-    <ClCompile Include="Protobuffs\Protobuffs.cpp" />
-    <ClCompile Include="Protobuffs\valve_parser.cpp" />
     <ClCompile Include="SDK\Entity.cpp" />
     <ClCompile Include="SDK\GlobalVars.cpp" />
     <ClCompile Include="SDK\KeyValues.cpp" />
@@ -94,7 +91,6 @@
     <ClInclude Include="Hacks\Glow.h" />
     <ClInclude Include="Hacks\InventoryChanger.h" />
     <ClInclude Include="Hacks\Misc.h" />
-    <ClInclude Include="Hacks\ProfileChanger.h" />
     <ClInclude Include="Hacks\Sound.h" />
     <ClInclude Include="Hacks\StreamProofESP.h" />
     <ClInclude Include="Hacks\Triggerbot.h" />
@@ -107,7 +103,6 @@
     <ClInclude Include="imgui\imgui_freetype.h" />
     <ClInclude Include="imgui\imgui_stdlib.h" />
     <ClInclude Include="InputUtil.h" />
-    <ClInclude Include="MemAlloc.h" />
     <ClInclude Include="JsonForward.h" />
     <ClInclude Include="MinHook\buffer.h" />
     <ClInclude Include="MinHook\hde\hde32.h" />
@@ -119,12 +114,6 @@
     <ClInclude Include="MinHook\trampoline.h" />
     <ClInclude Include="Netvars.h" />
     <ClInclude Include="nlohmann\json.hpp" />
-    <ClInclude Include="Protobuffs\Enums.h" />
-    <ClInclude Include="Protobuffs\Messages.h" />
-    <ClInclude Include="Protobuffs\Protobuffs.h" />
-    <ClInclude Include="Protobuffs\ProtoField.h" />
-    <ClInclude Include="Protobuffs\ProtoWriter.h" />
-    <ClInclude Include="Protobuffs\valve_parser.h" />
     <ClInclude Include="Resources\avatar_ct.h" />
     <ClInclude Include="Resources\avatar_tt.h" />
     <ClInclude Include="Resources\Resource.h" />
@@ -186,7 +175,6 @@
     <ClInclude Include="SDK\SoundEmitter.h" />
     <ClInclude Include="SDK\SoundInfo.h" />
     <ClInclude Include="SDK\Steam.h" />
-    <ClInclude Include="SDK\SteamAPI.h" />
     <ClInclude Include="SDK\StudioRender.h" />
     <ClInclude Include="SDK\Surface.h" />
     <ClInclude Include="SDK\UserCmd.h" />

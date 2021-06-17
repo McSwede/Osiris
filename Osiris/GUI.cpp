@@ -32,7 +32,6 @@
 #include "Hacks/Glow.h"
 #include "Hacks/AntiAim.h"
 #include "Hacks/Backtrack.h"
-#include "Hacks/ProfileChanger.h"
 #include "Hacks/Sound.h"
 
 constexpr auto windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize
@@ -112,7 +111,6 @@ void GUI::render() noexcept
         renderChamsWindow();
         renderStreamProofESPWindow();
         renderVisualsWindow();
-        ProfileChanger::drawGUI(false);
         InventoryChanger::drawGUI(false);
         Sound::drawGUI(false);
         renderStyleWindow();
@@ -189,7 +187,6 @@ void GUI::renderMenuBar() noexcept
         menuBarItem("Chams", window.chams);
         menuBarItem("ESP", window.streamProofESP);
         menuBarItem("Visuals", window.visuals);
-        ProfileChanger::menuBarItem();
         InventoryChanger::menuBarItem();
         Sound::menuBarItem();
         menuBarItem("Style", window.style);
@@ -1409,10 +1406,9 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
                     case 7: config->streamProofESP = { }; break;
                     case 8: config->visuals = { }; break;
                     case 9: InventoryChanger::resetConfig(); InventoryChanger::scheduleHudUpdate(); break;
-                    case 10: ProfileChanger::resetConfig(); ProfileChanger::Apply(); break;
-                    case 11: Sound::resetConfig(); break;
-                    case 12: config->style = { }; updateColors(); break;
-                    case 13: config->misc = { };  Misc::updateClanTag(true); break;
+                    case 10: Sound::resetConfig(); break;
+                    case 11: config->style = { }; updateColors(); break;
+                    case 12: config->misc = { };  Misc::updateClanTag(true); break;
                     }
                 }
             }
@@ -1497,7 +1493,6 @@ void GUI::renderGuiStyle2() noexcept
             renderVisualsWindow(true);
             ImGui::EndTabItem();
         }
-        ProfileChanger::tabItem();
         InventoryChanger::tabItem();
         Sound::tabItem();
         if (ImGui::BeginTabItem("Misc")) {

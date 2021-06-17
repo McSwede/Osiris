@@ -27,9 +27,6 @@
     <Filter Include="nlohmann">
       <UniqueIdentifier>{44d5d3e3-0072-4a5a-b725-1b9807c24a06}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Protobuffs">
-      <UniqueIdentifier>{de071ad7-c1f9-464e-ac23-b398e2ee4add}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resources">
       <UniqueIdentifier>{9c108701-c50c-4f8a-9b3c-013b6407706f}</UniqueIdentifier>
     </Filter>
@@ -166,15 +163,6 @@
     </ClCompile>
     <ClCompile Include="AntiDetection.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Protobuffs\Protobuffs.cpp">
-      <Filter>Protobuffs</Filter>
-    </ClCompile>
-    <ClCompile Include="Protobuffs\valve_parser.cpp">
-      <Filter>Protobuffs</Filter>
-    </ClCompile>
-    <ClCompile Include="Hacks\ProfileChanger.cpp">
-      <Filter>Hacks</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files</Filter>
@@ -539,33 +527,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SDK\FileSystem.h">
-      <Filter>SDK</Filter>
-    </ClInclude>
-    <ClInclude Include="Protobuffs\Enums.h">
-      <Filter>Protobuffs</Filter>
-    </ClInclude>
-    <ClInclude Include="Protobuffs\Messages.h">
-      <Filter>Protobuffs</Filter>
-    </ClInclude>
-    <ClInclude Include="Protobuffs\Protobuffs.h">
-      <Filter>Protobuffs</Filter>
-    </ClInclude>
-    <ClInclude Include="Protobuffs\ProtoField.h">
-      <Filter>Protobuffs</Filter>
-    </ClInclude>
-    <ClInclude Include="Protobuffs\ProtoWriter.h">
-      <Filter>Protobuffs</Filter>
-    </ClInclude>
-    <ClInclude Include="Protobuffs\valve_parser.h">
-      <Filter>Protobuffs</Filter>
-    </ClInclude>
-    <ClInclude Include="Hacks\ProfileChanger.h">
-      <Filter>Hacks</Filter>
-    </ClInclude>
-    <ClInclude Include="MemAlloc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SDK\SteamAPI.h">
       <Filter>SDK</Filter>
     </ClInclude>
     <ClInclude Include="Texture.h">
